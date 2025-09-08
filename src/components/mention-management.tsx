@@ -215,7 +215,7 @@ export function MentionManagement() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Gestion des Mentions</h1>
           <p className="text-muted-foreground">Gérer les mentions académiques de l'université</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{mentions.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>

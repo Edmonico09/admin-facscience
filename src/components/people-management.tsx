@@ -563,7 +563,7 @@ export function PeopleManagement() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Gestion des Personnes</h1>
           <p className="text-muted-foreground">Gérer le personnel universitaire par catégorie</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex  items-center gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{people.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
@@ -587,11 +587,12 @@ export function PeopleManagement() {
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button
-                  className="bg-university-primary hover:bg-university-primary/90"
-                  onClick={() => setFormData({ ...formData, type: activeTab })}
+                    className="bg-university-primary rounded-full w-10 h-10 sm:w-fit sm:rounded-lg hover:bg-university-primary/90"                  
+                    onClick={() => setFormData({ ...formData, type: activeTab })}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter {activeTab}
+                  <Plus className="h-4 w-4" />
+                  <div className="hidden sm:block">Ajouter {activeTab}</div>
+                  
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
@@ -671,6 +672,7 @@ export function PeopleManagement() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Barre de recherche */}
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -683,36 +685,39 @@ export function PeopleManagement() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as PersonType)}>
-            <TabsList className="grid w-full grid-cols-4">
+          {/* Onglets */}
+          <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as PersonType)} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 gap-4">
               <TabsTrigger value="PAT" className="flex items-center gap-2">
                 PAT
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                   {tabCounts.PAT}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="Professeur" className="flex items-center gap-2">
-                Professeur
-                <Badge variant="secondary" className="text-xs">
+                Prof.
+                <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                   {tabCounts.Professeur}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="COFAC" className="flex items-center gap-2">
                 COFAC
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                   {tabCounts.COFAC}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="Tete" className="flex items-center gap-2">
-                Tête
-                <Badge variant="secondary" className="text-xs">
+                Leader
+                <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                   {tabCounts.Tete}
                 </Badge>
               </TabsTrigger>
             </TabsList>
 
+            {/* Contenu par onglet */}
             {(["PAT", "Professeur", "COFAC", "Tete"] as PersonType[]).map((tabType) => (
               <TabsContent key={tabType} value={tabType} className="space-y-4">
+                {/* Aucun résultat */}
                 {filteredPeople.length === 0 ? (
                   <div className="text-center py-8">
                     <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -723,82 +728,151 @@ export function PeopleManagement() {
                     </p>
                   </div>
                 ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nom</TableHead>
-                          <TableHead>Contact</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Informations spécifiques</TableHead>
-                          <TableHead>Date création</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredPeople.map((person) => (
-                          <TableRow key={person.id}>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">
-                                  {person.prenom} {person.nom}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Mail className="h-3 w-3" />
-                                  <span>{person.email}</span>
-                                </div>
-                                {person.tel && (
-                                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                    <Phone className="h-3 w-3" />
-                                    <span>{person.tel}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>{getPersonTypeBadge(person.type)}</TableCell>
-                            <TableCell>{getSpecificInfo(person)}</TableCell>
-                            <TableCell>{new Date(person.dateCreation).toLocaleDateString("fr-FR")}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleEdit(person)}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Êtes-vous sûr de vouloir supprimer "{person.prenom} {person.nom}" ? Cette action
-                                        est irréversible.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleDelete(person.id)}
-                                        className="bg-destructive hover:bg-destructive/90"
-                                      >
-                                        Supprimer
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </TableCell>
+                  <>
+                    {/* Version Desktop - Table */}
+                    <div className="hidden md:block rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nom</TableHead>
+                            <TableHead>Contact</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Infos spécifiques</TableHead>
+                            <TableHead>Date création</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredPeople.map((person) => (
+                            <TableRow key={person.id}>
+                              <TableCell className="font-medium">
+                                {person.prenom} {person.nom}
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Mail className="h-3 w-3" />
+                                    <span>{person.email}</span>
+                                  </div>
+                                  {person.tel && (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Phone className="h-3 w-3" />
+                                      <span>{person.tel}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>{getPersonTypeBadge(person.type)}</TableCell>
+                              <TableCell>{getSpecificInfo(person)}</TableCell>
+                              <TableCell>{new Date(person.dateCreation).toLocaleDateString("fr-FR")}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => handleEdit(person)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="outline" size="sm">
+                                        <Trash2 className="h-4 w-4 text-red-500 font-bold" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Êtes-vous sûr de vouloir supprimer "{person.prenom} {person.nom}" ? Cette action est irréversible.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDelete(person.id)}
+                                          className="bg-destructive hover:bg-destructive/90"
+                                        >
+                                          Supprimer
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Version Mobile - Cards */}
+                    <div className="md:hidden space-y-4">
+                      {filteredPeople.map((person) => (
+                        <div key={person.id} className="bg-card border rounded-lg p-4 shadow-sm">
+                          {/* Header */}
+                          <div className="flex justify-between items-start mb-3">
+                            <h3 className="font-semibold text-base">{person.prenom} {person.nom}</h3>
+                            {getPersonTypeBadge(person.type)}
+                          </div>
+
+                          {/* Contact */}
+                          <div className="space-y-2 mb-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4" />
+                              <span>{person.email}</span>
+                            </div>
+                            {person.tel && (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Phone className="h-4 w-4" />
+                                <span>{person.tel}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Infos spécifiques */}
+                          <div className="mb-3">
+                            <span className="text-sm text-muted-foreground">{getSpecificInfo(person)?.key}</span>
+                            <div className="text-sm font-medium">{getSpecificInfo(person)}</div>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Date d'ajout:</span> 
+                            <span className="text-sm">{new Date(person.dateCreation).toLocaleDateString("fr-FR")}</span>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2 pt-3 border-t">
+                            <Button variant="outline" size="sm" onClick={() => handleEdit(person)} className="flex-1">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Modifier
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="flex-1 text-red-500">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Supprimer
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="w-[90vw] max-w-md">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Êtes-vous sûr de vouloir supprimer "{person.prenom} {person.nom}" ? Cette action est irréversible.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                  <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(person.id)}
+                                    className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
+                                  >
+                                    Supprimer
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </TabsContent>
             ))}

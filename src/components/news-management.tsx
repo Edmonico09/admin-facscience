@@ -364,7 +364,7 @@ export function NewsManagement() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Gestion des Actualités</h1>
           <p className="text-muted-foreground">Gérer les actualités et événements de l'université</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{news.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
@@ -380,15 +380,15 @@ export function NewsManagement() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 justify-between">
             <CardTitle className="flex items-center gap-2">
               <Newspaper className="h-5 w-5 text-university-primary" />
               Liste des Actualités
             </CardTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full md:w-auto justify-between">
               <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" className="h-10">
                     <Tag className="h-4 w-4 mr-2" />
                     Gérer Catégories
                   </Button>
@@ -460,9 +460,9 @@ export function NewsManagement() {
               </Dialog>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-university-primary hover:bg-university-primary/90">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Ajouter une Actualité
+                  <Button className="bg-university-primary rounded-full w-10 h-10 sm:w-fit sm:rounded-lg hover:bg-university-primary/90">
+                    <Plus className="h-4 w-4" />
+                    <div className="hidden sm:block">Ajouter une Actualité</div>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -605,7 +605,7 @@ export function NewsManagement() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-4 mb-6">
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative flex-1 min-w-[50%]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Rechercher une actualité..."
@@ -614,40 +614,42 @@ export function NewsManagement() {
                 className="pl-10"
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Toutes catégories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes catégories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} />
-                      {category.nom}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Tous statuts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous statuts</SelectItem>
-                <SelectItem value="published">Publié</SelectItem>
-                <SelectItem value="draft">Brouillon</SelectItem>
-                <SelectItem value="archived">Archivé</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 items-center gap-2">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[100%]">
+                  <SelectValue placeholder="Toutes catégories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes catégories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} />
+                        {category.nom}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-[100%]">
+                  <SelectValue placeholder="Tous statuts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous statuts</SelectItem>
+                  <SelectItem value="published">Publié</SelectItem>
+                  <SelectItem value="draft">Brouillon</SelectItem>
+                  <SelectItem value="archived">Archivé</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Tabs defaultValue="cards" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            {/* <TabsList className="hidden lg:grid w-full grid-cols-2 ">
               <TabsTrigger value="cards">Vue Cartes</TabsTrigger>
               <TabsTrigger value="table">Vue Tableau</TabsTrigger>
-            </TabsList>
+            </TabsList> */}
 
             <TabsContent value="cards" className="space-y-4">
               {filteredNews.length === 0 ? (
@@ -660,9 +662,9 @@ export function NewsManagement() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredNews.map((n) => (
-                    <Card key={n.id} className="hover:shadow-md transition-shadow">
+                    <Card key={n.id} className="hover:shadow-md transition-shadow flex flex-col">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
@@ -674,79 +676,88 @@ export function NewsManagement() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-                        {n.medias.length > 0 && (
-                          <img
-                            src={n.medias[0].url || "/placeholder.svg"}
-                            alt={n.titre}
-                            className="w-full h-32 object-cover rounded-md"
-                          />
-                        )}
-                        <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
-                        <div className="space-y-1 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(n.date_commencement).toLocaleDateString("fr-FR")}</span>
-                            {n.date_fin && (
-                              <>
-                                <span>-</span>
-                                <span>{new Date(n.date_fin).toLocaleDateString("fr-FR")}</span>
-                              </>
+                      <CardContent className="flex-1 flex flex-col">
+                        <div className="flex-1 space-y-3">
+                          {n.medias.length > 0 && (
+                            <img
+                              src={n.medias[0].url || "/placeholder.svg"}
+                              alt={n.titre}
+                              className="w-full h-32 object-cover rounded-md"
+                            />
+                          )}
+                          <div>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
+                          </div>
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              <span>{new Date(n.date_commencement).toLocaleDateString("fr-FR")}</span>
+                              {n.date_fin && (
+                                <>
+                                  <span>-</span>
+                                  <span>{new Date(n.date_fin).toLocaleDateString("fr-FR")}</span>
+                                </>
+                              )}
+                            </div>
+                            {n.lieu && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span>{n.lieu}</span>
+                              </div>
                             )}
                           </div>
-                          {n.lieu && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span>{n.lieu}</span>
-                            </div>
-                          )}
                         </div>
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex gap-1">
-                            <Button variant="outline" size="sm" onClick={() => handleEdit(n)}>
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Êtes-vous sûr de vouloir supprimer l'actualité "{n.titre}" ? Cette action est
-                                    irréversible.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(n.id)}
-                                    className="bg-destructive hover:bg-destructive/90"
-                                  >
-                                    Supprimer
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                        
+                        <div className="pt-3 border-t mt-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" onClick={() => handleEdit(n)}>
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Êtes-vous sûr de vouloir supprimer l'actualité "{n.titre}" ? Cette action est
+                                      irréversible.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(n.id)}
+                                      className="bg-destructive hover:bg-destructive/90"
+                                    >
+                                      Supprimer
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                            <div className="flex-1">
+                              <Select
+                                value={n.statut}
+                                onValueChange={(value: "draft" | "published" | "archived") =>
+                                  handleStatusChange(n.id, value)
+                                }
+                              >
+                                <SelectTrigger className="w-full h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="draft">Brouillon</SelectItem>
+                                  <SelectItem value="published">Publier</SelectItem>
+                                  <SelectItem value="archived">Archiver</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                          <Select
-                            value={n.statut}
-                            onValueChange={(value: "draft" | "published" | "archived") =>
-                              handleStatusChange(n.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-24 h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="draft">Brouillon</SelectItem>
-                              <SelectItem value="published">Publier</SelectItem>
-                              <SelectItem value="archived">Archiver</SelectItem>
-                            </SelectContent>
-                          </Select>
                         </div>
                       </CardContent>
                     </Card>
@@ -756,16 +767,15 @@ export function NewsManagement() {
             </TabsContent>
 
             <TabsContent value="table">
-              <div className="rounded-md border">
+              <div className="hidden lg:block rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Titre</TableHead>
-                      <TableHead>Catégorie</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Lieu</TableHead>
+                      <TableHead className="text-center">Date</TableHead>
+                      <TableHead className="text-center">Lieu</TableHead>
                       <TableHead>Statut</TableHead>
-                      <TableHead>Médias</TableHead>
+                      <TableHead className="hidden xl:flex items-center">Médias</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -778,9 +788,8 @@ export function NewsManagement() {
                             <div className="text-sm text-muted-foreground truncate max-w-xs">{n.description}</div>
                           </div>
                         </TableCell>
-                        <TableCell>{getCategoryBadge(n.categorie)}</TableCell>
                         <TableCell>
-                          <div className="text-sm">
+                          <div className="flex justify-center text-sm">
                             <div>{new Date(n.date_commencement).toLocaleDateString("fr-FR")}</div>
                             {n.date_fin && (
                               <div className="text-muted-foreground">
@@ -789,9 +798,9 @@ export function NewsManagement() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{n.lieu || "-"}</TableCell>
+                        <TableCell className="text-center">{n.lieu || "-"}</TableCell>
                         <TableCell>{getStatusBadge(n.statut)}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden xl:table-cell">
                           <Badge variant="outline">{n.medias.length}</Badge>
                         </TableCell>
                         <TableCell className="text-right">

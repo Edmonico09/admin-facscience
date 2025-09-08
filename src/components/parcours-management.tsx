@@ -313,7 +313,7 @@ export function ParcoursManagement() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Gestion des Parcours</h1>
           <p className="text-muted-foreground">Gérer les parcours académiques par mention</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{parcours.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
@@ -336,9 +336,9 @@ export function ParcoursManagement() {
             </CardTitle>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-university-primary hover:bg-university-primary/90">
+                <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un Parcours
+                  <div className="hidden md:block">Ajouter un Parcours</div>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
@@ -436,6 +436,7 @@ export function ParcoursManagement() {
             </Dialog>
           </div>
         </CardHeader>
+
         <CardContent>
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <div className="relative flex-1 min-w-[200px]">
@@ -489,7 +490,7 @@ export function ParcoursManagement() {
           </div>
 
           <Tabs defaultValue="grouped" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="hidden md:grid w-full grid-cols-2">
               <TabsTrigger value="grouped">Vue par Mention</TabsTrigger>
               <TabsTrigger value="table">Vue Tableau</TabsTrigger>
             </TabsList>
@@ -508,58 +509,139 @@ export function ParcoursManagement() {
                 groupedParcours.map(({ mention, parcours: mentionParcours }) => (
                   <Card key={mention.id}>
                     <CardHeader>
-                      <CardTitle className="text-lg text-university-primary">
-                        {mention.nom} ({mention.code})
-                        <Badge variant="outline" className="ml-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <CardTitle className="text-base sm:text-lg text-university-primary break-words">
+                          {mention.nom} ({mention.code})
+                        </CardTitle>
+                        <Badge variant="outline" className="self-start sm:self-auto">
                           {mentionParcours.length} parcours
                         </Badge>
-                      </CardTitle>
+                      </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4">
+                    <CardContent className="px-3 sm:px-6">
+                      <div className="space-y-4">
                         {mentionParcours.map((p) => (
-                          <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-medium text-foreground">{p.nom_parcours}</h4>
-                                <Badge className={getNiveauBadgeColor(p.niveau_parcours)}>{p.niveau_parcours}</Badge>
-                                <Badge className={getFormationBadgeColor(p.formation)}>{p.formation}</Badge>
+                          <div key={p.id}>
+                            {/* Version Desktop - Layout horizontal */}
+                            <div className="hidden md:flex items-center justify-between p-4 border rounded-lg">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h4 className="font-medium text-foreground">{p.nom_parcours}</h4>
+                                  <Badge className={getNiveauBadgeColor(p.niveau_parcours)}>{p.niveau_parcours}</Badge>
+                                  <Badge className={getFormationBadgeColor(p.formation)}>{p.formation}</Badge>
+                                </div>
+                                {p.description && <p className="text-sm text-muted-foreground mb-2">{p.description}</p>}
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                  <span>{p.nombreEtudiants} étudiants</span>
+                                  <span>Créé le {new Date(p.dateCreation).toLocaleDateString("fr-FR")}</span>
+                                </div>
                               </div>
-                              {p.description && <p className="text-sm text-muted-foreground mb-2">{p.description}</p>}
-                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span>{p.nombreEtudiants} étudiants</span>
-                                <span>Créé le {new Date(p.dateCreation).toLocaleDateString("fr-FR")}</span>
+                              <div className="flex items-center gap-2 ml-4">
+                                <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent className="w-[95vw] max-w-md">
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
+                                        est irréversible.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                      <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDelete(p.id)}
+                                        className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
+                                      >
+                                        Supprimer
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
-                                      est irréversible.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(p.id)}
-                                      className="bg-destructive hover:bg-destructive/90"
-                                    >
+
+                            {/* Version Mobile/Tablet - Layout vertical */}
+                            <div className="md:hidden border rounded-lg p-4 bg-card">
+                              {/* Header avec nom et badges */}
+                              <div className="mb-3">
+                                <h4 className="font-medium text-base mb-2 break-words">{p.nom_parcours}</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge className={`${getNiveauBadgeColor(p.niveau_parcours)} text-xs`}>
+                                    {p.niveau_parcours}
+                                  </Badge>
+                                  <Badge className={`${getFormationBadgeColor(p.formation)} text-xs`}>
+                                    {p.formation}
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              {/* Description */}
+                              {p.description && (
+                                <div className="mb-4">
+                                  <p className="text-sm text-muted-foreground leading-relaxed">
+                                    {p.description}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Informations détaillées */}
+                              <div className="space-y-2 mb-4">
+                                <div className="flex justify-between items-center py-1">
+                                  <span className="text-sm text-muted-foreground">Étudiants:</span>
+                                  <span className="text-sm font-medium">{p.nombreEtudiants}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-1">
+                                  <span className="text-sm text-muted-foreground">Date création:</span>
+                                  <span className="text-sm">{new Date(p.dateCreation).toLocaleDateString("fr-FR")}</span>
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex gap-2 pt-3 border-t">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => handleEdit(p)}
+                                  className="flex-1"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Modifier
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="flex-1">
+                                      <Trash2 className="h-4 w-4 mr-2" />
                                       Supprimer
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent className="w-[95vw] max-w-md">
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle className="text-lg">Confirmer la suppression</AlertDialogTitle>
+                                      <AlertDialogDescription className="text-sm">
+                                        Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
+                                        est irréversible.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                      <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDelete(p.id)}
+                                        className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
+                                      >
+                                        Supprimer
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
                             </div>
                           </div>
                         ))}
