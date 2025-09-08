@@ -236,11 +236,12 @@ export function MentionManagement() {
               <GraduationCap className="h-5 w-5 text-university-primary" />
               Liste des Mentions
             </CardTitle>
+
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-university-primary hover:bg-university-primary/90">
+                <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter une Mention
+                  <div className="hidden md:block">Ajouter une Mention</div>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -313,7 +314,8 @@ export function MentionManagement() {
             </div>
           </div>
 
-          <div className="rounded-md border">
+          {/* Version Desktop - Table */}
+          <div className="hidden md:block rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -350,7 +352,7 @@ export function MentionManagement() {
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 text-red-500 font-bold" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -380,6 +382,90 @@ export function MentionManagement() {
             </Table>
           </div>
 
+          {/* Version Mobile - Cards */}
+          <div className="md:hidden space-y-4">
+            {filteredMentions.map((mention) => (
+              <div key={mention.id} className="bg-card border rounded-lg p-4 shadow-sm">
+                {/* Header de la carte avec code et statut */}
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
+                      {mention.code}
+                    </span>
+                    {getStatusBadge(mention.statut)}
+                  </div>
+                </div>
+                
+                {/* Nom et description */}
+                <div className="mb-4">
+                  <h3 className="font-semibold text-base mb-1">{mention.nom}</h3>
+                  {mention.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {mention.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Informations principales */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Responsable:</span>
+                    <span className="text-sm font-medium">{mention.responsable}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Parcours:</span>
+                    <Badge variant="outline" className="text-xs">{mention.nombreParcours}</Badge>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Date création:</span>
+                    <span className="text-sm">{new Date(mention.dateCreation).toLocaleDateString("fr-FR")}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-3 border-t">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleEdit(mention)}
+                    className="flex-1"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Modifier
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger className="text-red-500" asChild>
+                      <Button variant="outline" size="sm" className="flex-1">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Supprimer
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="w-[90vw] max-w-md">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Êtes-vous sûr de vouloir supprimer la mention "{mention.nom}" ? Cette action est
+                          irréversible.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                        <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(mention.id)}
+                          className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
+                        >
+                          Supprimer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {filteredMentions.length === 0 && (
             <div className="text-center py-8">
               <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -389,6 +475,7 @@ export function MentionManagement() {
             </div>
           )}
         </CardContent>
+
       </Card>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
