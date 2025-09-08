@@ -427,7 +427,7 @@ export function LabManagement() {
                       </Button>
                     </div>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {formData.description.map((item, index) => (
+                      {formData.description.map((item) => (
                         <div key={item.id} className="flex gap-2 items-start">
                           <div className="flex-1 grid grid-cols-2 gap-2">
                             <Input
@@ -656,7 +656,7 @@ export function LabManagement() {
                 </Button>
               </div>
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                {formData.description.map((item, index) => (
+                {formData.description.map((item) => (
                   <div key={item.id} className="flex gap-2 items-start">
                     <div className="flex-1 grid grid-cols-2 gap-2">
                       <Input
