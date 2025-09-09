@@ -20,6 +20,8 @@ jobs:
           docker build -t admin/admin-facscience:latest .
 
       # Save Docker image as tar
+      
+
       - name: Save Docker image to tar
         run: |
           mkdir -p /tmp/deploy
@@ -29,7 +31,14 @@ jobs:
             echo "Erreur : le fichier tar est vide ou n'a pas été créé"
             exit 1
           fi
-          scp - i ${{ secrets.PRIVATE_KEY }} /tmp/deploy/admin-facscience.tar ${{ secrets.HOST }}@${{ secrets.USERNAME }}:/dyco
+
+          # Sauvegarder la clé privée dans un fichier temporaire
+          echo "${{ secrets.PRIVATE_KEY }}" > /tmp/private_key
+          chmod 600 /tmp/private_key
+
+          # Copier l'image vers le serveur
+          scp -i /tmp/private_key /tmp/deploy/admin-facscience.tar \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
