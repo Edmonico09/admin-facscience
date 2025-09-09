@@ -29,17 +29,7 @@ jobs:
             echo "Erreur : le fichier tar est vide ou n'a pas été créé"
             exit 1
           fi
-
-      # Copy tar to server
-      - name: Copy Docker image to server
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          port: 22
-          source: "/tmp/deploy/admin-facscience.tar"
-          target: "/home/dyco/poinsa/"
+          scp - i ${{ secrets.PRIVATE_KEY }} /tmp/deploy/admin-facscience.tar ${{ secrets.HOST }}@${{ secrets.USERNAME }}:/dyco
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
