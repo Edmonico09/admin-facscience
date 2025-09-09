@@ -1,0 +1,16 @@
+name: Test Runner
+
+on: [push]
+jobs:
+  create-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloner le dépôt
+        uses: actions/checkout@v3
+
+      - name: Créer un fichier
+        run: echo "Hello depuis Gitea Actions 🚀" > test.txt
+
+      - name: Afficher le contenu
+        run: cat test.txt
+
