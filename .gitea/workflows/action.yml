@@ -18,7 +18,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t admin/admin-facscience:latest .
-          docker images admin/admin-facscience:latest
+          docker image admin/admin-facscience:latest
 
       # Save Docker image as tar
       - name: Save Docker image to tar
@@ -33,14 +33,9 @@ jobs:
 
       # Copy tar to server
       - name: Copy Docker image to server
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          port: 22
-          source: "/tmp/deploy/admin-facscience.tar"
-          target: "/home/dyco/poinsa/"
+        run: |
+            rsync -avz -e "ssh -i ${{ secrets.PRIVATE_KEY }} -p 22" admin-facscience.tar ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/poinsa/
+
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
@@ -52,18 +47,9 @@ jobs:
           port: 22
           script: |
             cd /home/dyco/poinsa
-            # Charger l'image Docker
+            # Charger l'im`age Docker
             docker load -i admin-facscience.tar
-            # Attendre la fin des opérations sur les conteneurs
-            for i in {1..10}; do
-              if docker ps -a --filter "status=exited" --filter "status=dead" --format '{{.ID}}' | grep -q .; then
-                echo "Attente de la fin des opérations sur les conteneurs..."
-                sleep 5
-              else
-                break
-              fi
-            done
-            # Arrêter et supprimer l'ancien conteneur
+            # Arrêter et supprimer l'ancien conteneur si il existe
             docker-compose down || true
             # Lancer le conteneur avec docker-compose
             docker-compose up -d
