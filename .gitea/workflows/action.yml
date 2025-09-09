@@ -37,8 +37,8 @@ jobs:
           chmod 600 /tmp/private_key
 
           # Copier l'image vers le serveur
-          scp -i /tmp/private_key /tmp/deploy/admin-facscience.tar \
-            ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/admin-facscience.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/
+
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
