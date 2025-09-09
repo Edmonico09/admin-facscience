@@ -1,4 +1,4 @@
-name: Deploy Threedwear App
+name: Deploy Admin facscience
 
 on:
   push:
@@ -6,34 +6,37 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # Étape 1 : récupérer le code
-      - name: Checkout code
+      # Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Étape 2 : Build Docker image
+      # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t threedwear-back:latest .
+          docker build -t admin/admin-facscience:latest .
 
-      # Étape 3 : Sauvegarder l'image dans un fichier .tar
-      - name: Save Docker image
-        run: docker save -o threedwear-back.tar threedwear-back:latest
+      # Save Docker image as tar
+      - name: Save Docker image to tar
+        run: |
+          docker save admin/admin-facscience:latest -o admin-facscience.tar
 
-      # Étape 4 : Copier le fichier .tar sur le serveur
-      - name: Transfer Docker image to server
-        uses: appleboy/scp-action@v0.1.4
+      # Copy tar to server
+      - name: Copy Docker image to server
+        uses: appleboy/scp-action@v0.1.6
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          source: "threedwear-back.tar"
+          port: 22
+          source: "admin-facscience.tar"
           target: "/home/dyco/poinsa/"
 
-      # Étape 5 : Déployer l'image sur le serveur
-      - name: Deploy Docker container
+      # Load Docker image and deploy with docker-compose
+      - name: Load and deploy on server
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
@@ -41,9 +44,12 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            docker load -i /home/dyco/poinsa/threedwear-back.tar
-            docker rm -f threedwear-back || true
-            docker run -d \
-              --name threedwear-back \
-              -p 7000:8000 \
-              threedwear-back:latest
+            cd /home/dyco/poinsa
+            # Charger l'im`age Docker
+            docker load -i admin-facscience.tar
+            # Arrêter et supprimer l'ancien conteneur si il existe
+            docker-compose down || true
+            # Lancer le conteneur avec docker-compose
+            docker-compose up -d
+            # Vérifier l'état des conteneurs
+            docker ps -a
