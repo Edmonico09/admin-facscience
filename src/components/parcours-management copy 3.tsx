@@ -941,11 +941,7 @@ export function ParcoursManagement() {
             </div>
           </div>
         </div>
-        <div className="col-span-7 flex justify-center h-[100%]">
-          <div className="grid grid-cols-5 w-[90%] h-[100%]">
-            <hr className="col-span-7 border-2 border-black w-full"/>
-          </div>
-        </div>
+        <div className="col-span-3">AAAAA</div>
         <div className="col-span-1">AAAAA</div>
         <div>AAAAA</div>
         <div>AAAAA</div>
