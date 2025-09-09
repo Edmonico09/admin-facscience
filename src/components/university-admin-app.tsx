@@ -11,6 +11,8 @@ import { NewsManagement } from "@/components/news-management"
 import { LabManagement } from "@/components/lab-management"
 import { PeopleManagement } from "@/components/people-management"
 import { GlobalInfoManagement } from "@/components/global-info-management"
+import { SpecialityManagement } from "./speciality-management"
+import { UniversityProvider } from "@/contexts/speciality-context"
 
 export function UniversityAdminApp() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
@@ -27,6 +29,14 @@ export function UniversityAdminApp() {
             <Route path="/mentions" element={<MentionManagement />} />
             <Route path="/parcours" element={<ParcoursManagement />} />
             <Route path="/news" element={<NewsManagement />} />
+            <Route path="/speciality" element={
+              <UniversityProvider>
+                <div className="p-6">
+                  <SpecialityManagement />
+                </div>
+              </UniversityProvider>
+              
+              } />
             <Route path="/labs" element={<LabManagement />} />
             <Route path="/people" element={<PeopleManagement />} />
             <Route path="/global-info" element={<GlobalInfoManagement />} />
