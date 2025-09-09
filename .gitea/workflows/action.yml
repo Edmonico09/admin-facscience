@@ -22,7 +22,9 @@ jobs:
       # Save Docker image as tar
       - name: Save Docker image to tar
         run: |
-          docker save admin/admin-facscience:latest -o /tmp/admin-facscience.tar
+          mkdir -p /tmp/deploy
+          docker save admin/admin-facscience:latest -o /tmp/deploy/admin-facscience.tar
+          ls -lh /tmp/deploy/admin-facscience.tar
 
       # Copy tar to server
       - name: Copy Docker image to server
