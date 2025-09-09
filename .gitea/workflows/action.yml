@@ -37,7 +37,7 @@ jobs:
           chmod 600 /tmp/private_key
 
           # Copier l'image vers le serveur
-          scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/admin-facscience.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/admin-facscience.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/poinsa
 
 
       # Load Docker image and deploy with docker-compose
@@ -53,8 +53,8 @@ jobs:
             # Charger l'im`age Docker
             docker load -i admin-facscience.tar
             # Arrêter et supprimer l'ancien conteneur si il existe
-            docker-compose down || true
+            docker compose down || true
             # Lancer le conteneur avec docker-compose
-            docker-compose up -d
+            docker compose up -d
             # Vérifier l'état des conteneurs
             docker ps -a
