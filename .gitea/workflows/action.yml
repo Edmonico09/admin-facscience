@@ -1,11 +1,42 @@
-name: deploy threedwear back
-on: [push]
+name: Deploy Admin facscience
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  create-folder:
-    name: create folder
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Execute commande
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t admin/admin-facscience:latest .
+
+      # Save Docker image as tar
+      - name: Save Docker image to tar
+        run: |
+          docker save admin/admin-facscience:latest -o admin-facscience.tar
+
+      # Copy tar to server
+      - name: Copy Docker image to server
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          source: "admin-facscience.tar"
+          target: "/home/dyco/poinsa/"
+
+      # Load Docker image and deploy with docker-compose
+      - name: Load and deploy on server
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
@@ -13,6 +44,12 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            mkdir /home/dyco/poinsa
-            ls -al /home/dyco
-
+            cd /home/dyco/poinsa
+            # Charger l'image Docker
+            docker load -i admin-facscience.tar
+            # Arrêter et supprimer l'ancien conteneur si il existe
+            docker-compose down || true
+            # Lancer le conteneur avec docker-compose
+            docker-compose up -d
+            # Vérifier l'état des conteneurs
+            docker ps -a

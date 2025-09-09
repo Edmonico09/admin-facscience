@@ -1,0 +1,8 @@
+services:
+  admin-facscience:
+    image: admin/admin-facscience  # image locale
+    container_name: admin-facsicence
+    ports:
+      - "83:80"
+    restart: always
+
