@@ -18,12 +18,29 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t admin/admin-facscience:latest .
+          docker image admin/admin-facscience:latest
 
       # Save Docker image as tar
-      - name: Deploy Docker image to server
+      - name: Save Docker image to tar
         run: |
-          docker save admin/admin-facscience:latest | ssh -i ${{ secrets.PRIVATE_KEY }} -p 22 ${{ secrets.USERNAME }}@${{ secrets.HOST }} "docker load"
+          mkdir -p /tmp/deploy
+          docker save admin/admin-facscience:latest -o /tmp/deploy/admin-facscience.tar
+          ls -lh /tmp/deploy/admin-facscience.tar
+          if [ ! -s /tmp/deploy/admin-facscience.tar ]; then
+            echo "Erreur : le fichier tar est vide ou n'a pas été créé"
+            exit 1
+          fi
 
+      # Copy tar to server
+      - name: Copy Docker image to server
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          source: "/tmp/deploy/admin-facscience.tar"
+          target: "/home/dyco/poinsa/"
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
