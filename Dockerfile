@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
 RUN npx vite build
 
 # Étape 2 : nginx

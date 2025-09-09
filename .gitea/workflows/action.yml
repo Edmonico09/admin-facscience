@@ -17,7 +17,7 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t admin/admin-facscience:latest .
+          docker build --dns 8.8.8.8 --dns 8.8.4.4 -t admin/admin-facscience:latest .
 
       # Save Docker image as tar
       - name: Save Docker image to tar
