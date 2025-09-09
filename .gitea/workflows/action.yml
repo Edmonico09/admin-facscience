@@ -20,20 +20,9 @@ jobs:
           docker build -t admin/admin-facscience:latest .
 
       # Save Docker image as tar
-      - name: Save Docker image to tar
+      - name: Deploy Docker image to server
         run: |
-          mkdir -p /tmp/deploy
-          docker save admin/admin-facscience:latest -o /tmp/deploy/admin-facscience.tar
-          ls -lh /tmp/deploy/admin-facscience.tar
-          if [ ! -s /tmp/deploy/admin-facscience.tar ]; then
-            echo "Erreur : le fichier tar est vide ou n'a pas été créé"
-            exit 1
-          fi
-
-      # Copy tar to server
-      - name: Copy Docker image to server
-        run: |
-            rsync -avz -e "ssh -i ${{ secrets.PRIVATE_KEY }} -p 22" admin-facscience.tar ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/poinsa/
+          docker save admin/admin-facscience:latest | ssh -i ${{ secrets.PRIVATE_KEY }} -p 22 ${{ secrets.USERNAME }}@${{ secrets.HOST }} "docker load"
 
 
       # Load Docker image and deploy with docker-compose
