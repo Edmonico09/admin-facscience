@@ -38,6 +38,7 @@ jobs:
 
           # Copier l'image vers le serveur
           scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/admin-facscience.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/poinsa
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key docker-compose.yml \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/dyco/poinsa
 
 
       # Load Docker image and deploy with docker-compose
@@ -56,5 +57,9 @@ jobs:
             docker compose down || true
             # Lancer le conteneur avec docker-compose
             docker compose up -d
+
+            #lancer le 
+
             # Vérifier l'état des conteneurs
             docker ps -a
+            
