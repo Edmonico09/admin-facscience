@@ -1,10 +1,10 @@
 # Étape 1 : build React avec Vite local
-FROM node:20-alpine AS build
+FROM node:20 AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npx vite build
+RUN npx vite build --offline
 
 # Étape 2 : nginx
 FROM nginx:alpine
