@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -31,10 +30,10 @@ import {
 import { Plus, Search, Edit, Trash2, GraduationCap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
 import { Mention } from "@/services/types/mention"
-import { mockMentions } from "@/services/mocked-data"
+import { useMention } from "@/hooks/useMention"
 
 export function MentionManagement() {
-  const [mentions, setMentions] = useState<Mention[]>(mockMentions)
+  const {mentions, createMention, updateMention, removeMention} = useMention();
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -61,7 +60,7 @@ export function MentionManagement() {
     })
   }
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!formData.nom_mention || !formData.abbreviation || !formData.description_mention) {
       toast({
         title: "Erreur",
@@ -77,7 +76,7 @@ export function MentionManagement() {
       abbreviation: formData.abbreviation.toUpperCase(),
     }
 
-    setMentions([...mentions, newMention])
+    await createMention(newMention)
     setIsAddDialogOpen(false)
     resetForm()
     toast({
@@ -96,7 +95,7 @@ export function MentionManagement() {
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async() => {
     if (!formData.nom_mention || !formData.abbreviation || !formData.description_mention || !editingMention) {
       toast({
         title: "Erreur",
@@ -106,17 +105,7 @@ export function MentionManagement() {
       return
     }
 
-    const updatedMentions = mentions.map((mention) =>
-      mention.id_mention === editingMention.id_mention
-        ? {
-            ...mention,
-            nom_mention: formData.nom_mention,
-            description_mention: formData.description_mention,
-          }
-        : mention,
-    )
-
-    setMentions(updatedMentions)
+    await updateMention(editingMention.id_mention||0, formData)
     setIsEditDialogOpen(false)
     setEditingMention(null)
     resetForm()
@@ -126,20 +115,12 @@ export function MentionManagement() {
     })
   }
 
-  const handleDelete = (id: number) => {
-    setMentions(mentions.filter((mention) => mention.id_mention !== id))
+  const handleDelete = async (id: number) => {
+    await removeMention(id)
     toast({
       title: "Succès",
       description: "Mention supprimée avec succès",
     })
-  }
-
-  const getStatusBadge = (statut: "active" | "inactive") => {
-    return (
-      <Badge variant={statut === "active" ? "default" : "secondary"}>
-        {statut === "active" ? "Active" : "Inactive"}
-      </Badge>
-    )
   }
 
   return (
@@ -153,12 +134,6 @@ export function MentionManagement() {
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{mentions.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {mentions.length}
-            </div>
-            <div className="text-xs text-muted-foreground">Actives</div>
           </div>
         </div>
       </div>
@@ -196,21 +171,12 @@ export function MentionManagement() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="abbreviation">abbreviation *</Label>
+                    <Label htmlFor="abbreviation">Abbreviation *</Label>
                     <Input
                       id="abbreviation"
                       value={formData.abbreviation}
                       onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
                       placeholder="Ex: INFO"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description_mention">Responsable *</Label>
-                    <Input
-                      id="description_mention"
-                      value={formData.description_mention}
-                      onChange={(e) => setFormData({ ...formData, description_mention: e.target.value })}
-                      placeholder="Ex: Dr. Ahmed Benali"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -255,10 +221,7 @@ export function MentionManagement() {
                 <TableRow>
                   <TableHead>abbreviation</TableHead>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Responsable</TableHead>
-                  <TableHead>Parcours</TableHead>
-                  <TableHead>Date Création</TableHead>
-                  <TableHead>Statut</TableHead>
+                  <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -273,9 +236,6 @@ export function MentionManagement() {
                       </div>
                     </TableCell>
                     <TableCell>{mention.description_mention}</TableCell>
-                    <TableCell>
-                      {/* <Badge variant="outline">{mention.nombreParcours}</Badge> */}
-                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEdit(mention)}>
@@ -427,21 +387,12 @@ export function MentionManagement() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-abbreviation">abbreviation *</Label>
+              <Label htmlFor="edit-abbreviation">Abbreviation *</Label>
               <Input
                 id="edit-abbreviation"
                 value={formData.abbreviation}
                 onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
                 placeholder="Ex: INFO"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-responsable">Responsable *</Label>
-              <Input
-                id="edit-responsable"
-                value={formData.description_mention}
-                onChange={(e) => setFormData({ ...formData, description_mention: e.target.value })}
-                placeholder="Ex: Dr. Ahmed Benali"
               />
             </div>
             <div className="grid gap-2">

@@ -4,18 +4,18 @@ import { Mention } from "../types/mention";
 
 export const get = async () => {
   try {
-    const response = await fetch(`${baseURL}/mentions`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // const response = await fetch(`${baseURL}/mentions`, {
+    //   method: 'GET',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   }
+    // });
 
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP : ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`Erreur HTTP : ${response.status}`);
+    // }
 
-    const data: Mention[] = await response.json();
+    // const data: Mention[] = await response.json();
     // return data;
     return mockMentions;
   } catch (error) {
@@ -26,21 +26,21 @@ export const get = async () => {
 
 export const create = async (newMention: Mention) => {
   try {
-    const response = await fetch(`${baseURL}/mention`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newMention)
-    });
+    // const response = await fetch(`${baseURL}/mention`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify(newMention)
+    // });
 
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP : ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`Erreur HTTP : ${response.status}`);
+    // }
 
-    const data: Mention = await response.json();
+    // const data: Mention = await response.json();
     // return data;
-    return mockMentions;
+    return newMention;
   } catch (error) {
     console.error('Erreur lors du POST :', error);
     throw error;
@@ -49,21 +49,21 @@ export const create = async (newMention: Mention) => {
 
 export const update = async (id_:number, updateMention: Partial<Mention>) => {
   try {
-    const response = await fetch(`${baseURL}/mention/${id_}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(updateMention)
-    });
+    // const response = await fetch(`${baseURL}/mention/${id_}`, {
+    //   method: 'PATCH',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify(updateMention)
+    // });
 
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP : ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`Erreur HTTP : ${response.status}`);
+    // }
 
-    const data: Mention = await response.json();
+    // const data: Mention = await response.json();
     // return data;
-    return mockMentions;
+    return mockMentions[0];
   } catch (error) {
     console.error('Erreur lors du POST :', error);
     throw error;
@@ -72,20 +72,20 @@ export const update = async (id_:number, updateMention: Partial<Mention>) => {
 
 export const remove = async (id_:number) => {
   try {
-    const response = await fetch(`${baseURL}/mention/${id_}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    });
+    // const response = await fetch(`${baseURL}/mention/${id_}`, {
+    //   method: 'DELETE',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    // });
 
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP : ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`Erreur HTTP : ${response.status}`);
+    // }
 
-    const data: Mention = await response.json();
+    // const data: Mention = await response.json();
     // return data;
-    return mockMentions;
+    return mockMentions[0];
   } catch (error) {
     console.error('Erreur lors du POST :', error);
     throw error;

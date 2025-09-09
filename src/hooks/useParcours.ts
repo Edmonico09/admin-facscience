@@ -45,11 +45,11 @@ export function useParcours() {
       const data = await create(newParcours);
       const activity = {
         title: "Ajout parcours",
-        time: new Date().toISOString(),
+        time: new Date().toDateString(),
         status: "success",
       }
       addActivity(activity);
-      setParcours(data);
+      setParcours(prev => [data, ...prev]);
     } catch (err: any) {
       setError(err.message || "Erreur lors de la création du parcours");
     } finally {
@@ -65,11 +65,13 @@ export function useParcours() {
       const data = await update(id_, updateData);
       const activity = {
         title: "Mise a jour parcours",
-        time: new Date().toISOString(),
+        time: new Date().toDateString(),
         status: "success",
       }
       addActivity(activity);
-      setParcours(data);
+      setParcours(prev =>
+        prev.map(m => (m.id_parcours === id_ ? data : m))
+      );
     } catch (err: any) {
       setError(err.message || "Erreur lors de la mise à jour du parcours");
     } finally {
@@ -82,14 +84,14 @@ export function useParcours() {
     setLoading(true);
     setError(null);
     try {
-      const data = await remove(id_);
+      await remove(id_);
       const activity = {
         title: "Suppression parcours",
-        time: new Date().toISOString(),
+        time: new Date().toDateString(),
         status: "success",
       }
       addActivity(activity);
-      setParcours(data);
+      setParcours(prev => prev.filter(m => m.id_parcours !== id_));
     } catch (err: any) {
       setError(err.message || "Erreur lors de la suppression du parcours");
     } finally {

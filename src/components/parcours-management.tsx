@@ -184,12 +184,6 @@ export function ParcoursManagement() {
             <div className="text-2xl font-bold text-university-primary">{parcours.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {parcours.length}
-            </div>
-            <div className="text-xs text-muted-foreground">Actifs</div>
-          </div>
         </div>
       </div>
 
@@ -444,8 +438,6 @@ export function ParcoursManagement() {
                       <TableHead>Mention</TableHead>
                       <TableHead>Niveau</TableHead>
                       <TableHead>Formation</TableHead>
-                      <TableHead>Étudiants</TableHead>
-                      <TableHead>Date Création</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>

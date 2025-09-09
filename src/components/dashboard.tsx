@@ -122,7 +122,7 @@ export function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-university-primary">Progression des Objectifs</CardTitle>
@@ -150,9 +150,9 @@ export function Dashboard() {
               <Progress value={90} className="h-2" />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="text-university-primary flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
@@ -181,8 +181,8 @@ export function Dashboard() {
               </div>
             </div>
           </CardContent>
-        </Card>
-      </div>
+        </Card> */}
+      {/* </div> */}
     </div>
   )
 }

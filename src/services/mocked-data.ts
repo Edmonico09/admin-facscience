@@ -156,3 +156,8 @@ export const mockParcours: Parcours[] = [
     description_parcours: "Formation doctorale en physique théorique et recherche fondamentale",
   },
 ]
+
+export const mockUsers = [
+  { id: 1, identifiant: "alice", password: "password123", name: "Alice" },
+  { id: 2, identifiant: "bob", password: "secret", name: "Bob" },
+];

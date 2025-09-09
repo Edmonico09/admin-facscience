@@ -28,14 +28,14 @@ export function useMention() {
     setLoading(true);
     setError(null);
     try {
-      const data = await mentionApi.create(newMention);
+      const data: Mention = await mentionApi.create(newMention);
       const activity = {
         title: "Ajout mention",
-        time: new Date().toISOString(),
+        time: new Date().toDateString(),
         status: "success",
       };
       addActivity(activity);
-      setMentions(data);
+      setMentions(prev => [data, ...prev]);
     } catch (err: any) {
       setError(err.message || "Erreur lors de la création de la mention");
     } finally {
@@ -49,39 +49,48 @@ export function useMention() {
     setError(null);
     try {
       const data = await mentionApi.update(id_, updateData);
+  
       const activity = {
         title: "Mise à jour mention",
-        time: new Date().toISOString(),
+        time: new Date().toDateString(),
         status: "success",
       };
       addActivity(activity);
-      setMentions(data);
+  
+      // Remplace la mention mise à jour dans la liste
+      setMentions(prev =>
+        prev.map(m => (m.id_mention === id_ ? data : m))
+      );
     } catch (err: any) {
       setError(err.message || "Erreur lors de la mise à jour de la mention");
     } finally {
       setLoading(false);
     }
   }, []);
+  
 
   // Supprimer une mention
   const removeMention = useCallback(async (id_: number) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await mentionApi.remove(id_);
+      await mentionApi.remove(id_);
+  
       const activity = {
         title: "Suppression mention",
-        time: new Date().toISOString(),
+        time: new Date().toDateString(),
         status: "success",
       };
       addActivity(activity);
-      setMentions(data);
+  
+      // Supprime localement la mention du state
+      setMentions(prev => prev.filter(m => m.id_mention !== id_));
     } catch (err: any) {
       setError(err.message || "Erreur lors de la suppression de la mention");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []);  
 
   useEffect(() => {
     fetchAll();

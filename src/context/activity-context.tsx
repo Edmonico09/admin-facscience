@@ -1,6 +1,7 @@
 // src/contexts/ActivityContext.tsx
 import { createContext, useContext, useState, ReactNode } from "react"
 import { ActivityItem } from "@/services/types/activity"
+import { recentActivities } from "@/services/mocked-data"
  
 interface ActivityContextType {
   activities: ActivityItem[]
@@ -11,7 +12,7 @@ interface ActivityContextType {
 export const ActivityContext = createContext<ActivityContextType | undefined>(undefined)
 
 export const ActivityProvider = ({ children }: { children: ReactNode }) => {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
+  const [activities, setActivities] = useState<ActivityItem[]>(recentActivities)
 
   const addActivity = (activity: ActivityItem) => {
     setActivities((prev) => [...prev, activity])

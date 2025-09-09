@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { LayoutDashboard, GraduationCap, BookOpen, Newspaper, FlaskConical, Users, Settings } from "lucide-react"
+import { LayoutDashboard, GraduationCap, BookOpen, Newspaper, FlaskConical, Users, Settings, LogOut } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 
 interface SidebarProps {
@@ -19,6 +19,7 @@ const navigationItems = [
   { path: "/labs", label: "Laboratoires", icon: FlaskConical },
   { path: "/people", label: "Personnes", icon: Users },
   { path: "/global-info", label: "Infos Globales", icon: Settings },
+  { path: "/login", label: "Deconnexion", icon: LogOut },  
 ]
 
 function SidebarContent({ onNavigate }: { onNavigate: (path: string) => void }) {
