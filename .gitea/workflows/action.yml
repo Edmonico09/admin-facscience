@@ -45,7 +45,7 @@ jobs:
           port: 22
           script: |
             cd /home/dyco/poinsa
-            # Charger l'image Docker
+            # Charger l'im`age Docker
             docker load -i admin-facscience.tar
             # Arrêter et supprimer l'ancien conteneur si il existe
             docker-compose down || true
