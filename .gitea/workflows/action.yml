@@ -18,6 +18,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t admin/admin-facscience:latest .
+          docker images admin/admin-facscience:latest
 
       # Save Docker image as tar
       - name: Save Docker image to tar
@@ -51,9 +52,18 @@ jobs:
           port: 22
           script: |
             cd /home/dyco/poinsa
-            # Charger l'im`age Docker
+            # Charger l'image Docker
             docker load -i admin-facscience.tar
-            # Arrêter et supprimer l'ancien conteneur si il existe
+            # Attendre la fin des opérations sur les conteneurs
+            for i in {1..10}; do
+              if docker ps -a --filter "status=exited" --filter "status=dead" --format '{{.ID}}' | grep -q .; then
+                echo "Attente de la fin des opérations sur les conteneurs..."
+                sleep 5
+              else
+                break
+              fi
+            done
+            # Arrêter et supprimer l'ancien conteneur
             docker-compose down || true
             # Lancer le conteneur avec docker-compose
             docker-compose up -d
