@@ -313,7 +313,7 @@ export function ParcoursManagement() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Gestion des Parcours</h1>
           <p className="text-muted-foreground">Gérer les parcours académiques par mention</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{parcours.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
@@ -336,9 +336,9 @@ export function ParcoursManagement() {
             </CardTitle>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-university-primary hover:bg-university-primary/90">
+                <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un Parcours
+                  <div className="hidden md:block">Ajouter un Parcours</div>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
@@ -436,6 +436,7 @@ export function ParcoursManagement() {
             </Dialog>
           </div>
         </CardHeader>
+
         <CardContent>
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <div className="relative flex-1 min-w-[200px]">
