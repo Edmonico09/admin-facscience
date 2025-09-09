@@ -22,7 +22,7 @@ jobs:
       # Save Docker image as tar
       - name: Save Docker image to tar
         run: |
-          docker save admin/admin-facscience:latest -o admin-facscience.tar
+          docker save admin/admin-facscience:latest -o /tmp/admin-facscience.tar
 
       # Copy tar to server
       - name: Copy Docker image to server
@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          source: "admin-facscience.tar"
+          source: "/tmp/admin-facscience.tar"
           target: "/home/dyco/poinsa/"
 
       # Load Docker image and deploy with docker-compose
