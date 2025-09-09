@@ -18,7 +18,6 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t admin/admin-facscience:latest .
-          docker image admin/admin-facscience:latest
 
       # Save Docker image as tar
       - name: Save Docker image to tar
