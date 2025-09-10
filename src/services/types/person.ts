@@ -32,5 +32,6 @@ export type doyenEtVice = BasePerson & {
 
 export type BasePersonWithoutId = Omit<BasePerson, "id">;
 
-export type PersonType = "pat" | "professeur" | "COFAC" | "doyenEtVice"
+export type PersonType = "pat" | "professeur" | "cofac" | "doyen_et_vice";
 
+export type Person = PAT | Professeur | COFAC | doyenEtVice

@@ -31,107 +31,89 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { BasePerson, PersonType } from "@/services/types/person"
-import { createOptions, getSelectOptions } from "@/services/api/option"
+import { BasePerson, COFAC, doyenEtVice, PAT, Person, PersonType, Professeur } from "@/services/types/person"
+import { createOptions, getSelectOptions } from "@/services/api/option.api"
 import { options } from "@/services/types/option"
-import { createPerson, deletePerson, updatePerson } from "@/services/api/person"
+import { createPerson, deletePerson, getPersonsByType, updatePerson } from "@/services/api/person.api"
 
 
-interface Person {
-  id: number
-  nom: string
-  prenom: string
-  sexe : "F" | "M"
-  email: string
-  tel: string
-  type: PersonType
-  dateInsertion: string
-  // Specific fields
-  postAffectation?: string
-  grade?: string
-  fonction?: string
-  titre?: string
-  appartenance?: string
-  responsabilite?: string
-}
-
-// interface SelectOptions {
-//   postAffectations: string[]
-//   grades: string[]
-//   fonctions: string[]
-//   titres: string[]
-//   appartenances: string[]
-//   responsabilites: string[]
+// interface Person {
+//   id: number
+//   nom: string
+//   prenom: string
+//   sexe : "F" | "M"
+//   email: string
+//   tel: string
+//   type: PersonType
+//   dateInsertion: string
+//   // Specific fields
+//   postAffectation?: string
+//   grade?: string
+//   fonction?: string
+//   titre?: string
+//   appartenance?: string
+//   responsabilite?: string
 // }
 
-// const mockSelectOptions: SelectOptions = {
-//   postAffectations: ["Secrétariat", "Bibliothèque", "Laboratoire", "Administration", "Maintenance"],
-//   grades: ["Grade A", "Grade B", "Grade C", "Grade D"],
-//   fonctions: ["Secrétaire", "Technicien", "Assistant", "Responsable", "Coordinateur"],
-//   titres: ["Professeur", "Maître de Conférences", "Professeur Associé", "Professeur Émérite"],
-//   appartenances: ["Conseil Scientifique", "Conseil Pédagogique", "Commission Recherche", "Commission Formation"],
-//   responsabilites: ["Doyen", "Vice-Doyen", "Directeur des Études", "Directeur de la Recherche", "Secrétaire Général"],
-// }
-
-const mockPeople: Person[] = [
-  {
-    id: 1,
-    nom: "Benali",
-    prenom: "Ahmed",
-    email: "ahmed.benali@univ.ma",
-    tel: "+212 6 12 34 56 78",
-    type: "professeur",
-    dateInsertion: "2020-09-01",
-    sexe: "F",
-    titre: "professeur",
-  },
-  {
-    id: 2,
-    nom: "Zahra",
-    prenom: "Fatima",
-    email: "fatima.zahra@univ.ma",
-    tel: "+212 6 23 45 67 89",
-    type: "professeur",
-    dateInsertion: "2019-09-01",
-    sexe: "F",
-    titre: "Maître de Conférences",
-  },
-  {
-    id: 3,
-    nom: "Alami",
-    prenom: "Mohamed",
-    email: "mohamed.alami@univ.ma",
-    tel: "+212 6 34 56 78 90",
-    type: "doyenEtVice",
-    dateInsertion: "2018-09-01",
-    sexe: "F",
-    responsabilite: "Doyen",
-  },
-  {
-    id: 4,
-    nom: "Bennani",
-    prenom: "Aicha",
-    email: "aicha.bennani@univ.ma",
-    tel: "+212 6 45 67 89 01",
-    type: "COFAC",
-    dateInsertion: "2021-09-01",
-    sexe: "F",
-    appartenance: "Conseil Scientifique",
-  },
-  {
-    id: 5,
-    nom: "Idrissi",
-    prenom: "Omar",
-    email: "omar.idrissi@univ.ma",
-    tel: "+212 6 56 78 90 12",
-    type: "pat",
-    dateInsertion: "2020-03-15",
-    sexe: "F",
-    postAffectation: "Secrétariat",
-    grade: "Grade B",
-    fonction: "Secrétaire",
-  },
-]
+// const mockPeople: Person[] = [
+//   {
+//     id: 1,
+//     nom: "Benali",
+//     prenom: "Ahmed",
+//     email: "ahmed.benali@univ.ma",
+//     tel: "+212 6 12 34 56 78",
+//     type: "professeur",
+//     dateInsertion: "2020-09-01",
+//     sexe: "F",
+//     titre: "professeur",
+//   },
+//   {
+//     id: 2,
+//     nom: "Zahra",
+//     prenom: "Fatima",
+//     email: "fatima.zahra@univ.ma",
+//     tel: "+212 6 23 45 67 89",
+//     type: "professeur",
+//     dateInsertion: "2019-09-01",
+//     sexe: "F",
+//     titre: "Maître de Conférences",
+//   },
+//   {
+//     id: 3,
+//     nom: "Alami",
+//     prenom: "Mohamed",
+//     email: "mohamed.alami@univ.ma",
+//     tel: "+212 6 34 56 78 90",
+//     type: "doyenEtVice",
+//     dateInsertion: "2018-09-01",
+//     sexe: "F",
+//     responsabilite: "Doyen",
+//   },
+//   {
+//     id: 4,
+//     nom: "Bennani",
+//     prenom: "Aicha",
+//     email: "aicha.bennani@univ.ma",
+//     tel: "+212 6 45 67 89 01",
+//     type: "COFAC",
+//     dateInsertion: "2021-09-01",
+//     sexe: "F",
+//     appartenance: "Conseil Scientifique",
+//   },
+//   {
+//     id: 5,
+//     nom: "Idrissi",
+//     prenom: "Omar",
+//     email: "omar.idrissi@univ.ma",
+//     tel: "+212 6 56 78 90 12",
+//     type: "pat",
+//     dateInsertion: "2020-03-15",
+//     sexe: "F",
+//     postAffectation: "Secrétariat",
+//     grade: "Grade B",
+//     fonction: "Secrétaire",
+//   },
+// ]
 
 const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>> = {
   pat: (fd) => ({
@@ -142,10 +124,10 @@ const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>>
   professeur: (fd) => ({
     titre: fd.titre,
   }),
-  COFAC: (fd) => ({
+  cofac: (fd) => ({
     appartenance: fd.appartenance,
   }),
-  doyenEtVice: (fd) => ({
+  doyen_et_vice: (fd) => ({
     responsabilite: fd.responsabilite,
   }),
 };
@@ -171,7 +153,9 @@ export function PeopleManagement() {
     fetchOptions();
   }, []);
   
-  const [people, setPeople] = useState<Person[]>(mockPeople)
+
+
+  const [people, setPeople] = useState<Person[]>([]);
   const [selectOptions, setSelectOptions] = useState<options>({
     postAffectations: [],
     grades: [],
@@ -203,6 +187,54 @@ export function PeopleManagement() {
     responsabilite: "",
   })
   const { toast } = useToast()
+
+   useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        switch (activeTab) {
+          case "pat":
+              (async () => {
+                const data = await getPersonsByType<PAT>("pat");
+                setPeople(data);
+              })();
+              break;
+              
+          case "professeur":
+
+             (async () => {
+                const data = await getPersonsByType<Professeur>("professeur");
+                setPeople(data);
+              })();
+              break;
+
+          case "cofac":
+
+          (async () => {
+            const data = await getPersonsByType<COFAC>("cofac");
+            setPeople(data);
+          })();
+          break;
+
+          case "doyen_et_vice":
+
+          (async () => {
+            const data = await getPersonsByType<doyenEtVice>("doyen_et_vice");
+            setPeople(data);
+          })();
+          break;
+
+          default:
+            return null
+        }        
+      } catch (err) {
+        toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
+      }
+    };
+  
+    fetchOptions();
+  }, [activeTab]);
+  
+
 
   const filteredPeople = people.filter((person) => {
     const matchesSearch =
@@ -300,7 +332,7 @@ export function PeopleManagement() {
     const newPerson = await createPerson(personData);
 
     // Mettre à jour l'état
-    // setPeople([...people, newPerson]);
+  setPeople([...people, newPerson as Person]);
     setIsAddDialogOpen(false);
     resetForm();
 
@@ -318,22 +350,79 @@ export function PeopleManagement() {
 };
 
 
- const handleEdit = (person: Person) => {
+const handleEdit = (person: Person) => {
   setEditingPerson(person)
-  setFormData({
-    nom: person.nom,
-    prenom: person.prenom,
-    sexe: person.sexe || "",
-    email: person.email,
-    tel: person.tel,
-    type: person.type,
-    postAffectation: person.postAffectation || "",
-    grade: person.grade || "",
-    fonction: person.fonction || "",
-    titre: person.titre || "",
-    appartenance: person.appartenance || "",
-    responsabilite: person.responsabilite || "",
-  })
+
+  switch (person.type) {
+    case "pat":
+      setFormData({
+        nom: person.nom,
+        prenom: person.prenom,
+        sexe: person.sexe,
+        email: person.email,
+        tel: person.tel,
+        type: person.type,
+        postAffectation: person.postAffectation,
+        grade: person.grade,
+        fonction: person.fonction,
+        titre: "",
+        appartenance: "",
+        responsabilite: "",
+      })
+      break
+
+    case "professeur":
+      setFormData({
+        nom: person.nom,
+        prenom: person.prenom,
+        sexe: person.sexe,
+        email: person.email,
+        tel: person.tel,
+        type: person.type,
+        titre: person.titre,
+        postAffectation: "",
+        grade: "",
+        fonction: "",
+        appartenance: "",
+        responsabilite: "",
+      })
+      break
+
+    case "cofac":
+      setFormData({
+        nom: person.nom,
+        prenom: person.prenom,
+        sexe: person.sexe,
+        email: person.email,
+        tel: person.tel,
+        type: person.type,
+        appartenance: person.appartenance,
+        postAffectation: "",
+        grade: "",
+        fonction: "",
+        titre: "",
+        responsabilite: "",
+      })
+      break
+
+    case "doyen_et_vice":
+      setFormData({
+        nom: person.nom,
+        prenom: person.prenom,
+        sexe: person.sexe,
+        email: person.email,
+        tel: person.tel,
+        type: person.type,
+        responsabilite: person.responsabilite,
+        postAffectation: "",
+        grade: "",
+        fonction: "",
+        titre: "",
+        appartenance: "",
+      })
+      break
+  }
+
   setIsEditDialogOpen(true)
 }
 
@@ -365,10 +454,10 @@ export function PeopleManagement() {
         ...(formData.type === "professeur" && {
           titre: formData.titre,
         }),
-        ...(formData.type === "COFAC" && {
+        ...(formData.type === "cofac" && {
           appartenance: formData.appartenance,
         }),
-        ...(formData.type === "doyenEtVice" && {
+        ...(formData.type === "doyen_et_vice" && {
           responsabilite: formData.responsabilite,
         }),
       };
@@ -377,9 +466,10 @@ export function PeopleManagement() {
       const updatedPerson = await updatePerson(personToUpdate);
   
       // Mettre à jour l'état local avec la réponse du serveur
-      // setPeople((prev) =>
-      //   prev.map((p) => (p.id === updatedPerson.id ? updatedPerson : p))
-      // );
+   setPeople((prev) =>
+      prev.map((p) => (p.id === updatedPerson.id ? (updatedPerson as Person) : p))
+  );
+
   
       setIsEditDialogOpen(false);
       setEditingPerson(null);
@@ -424,8 +514,8 @@ export function PeopleManagement() {
     const colors = {
       pat: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
       professeur: "bg-university-primary/10 text-university-primary",
-      COFAC: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-      doyenEtVice: "bg-university-secondary/10 text-university-secondary",
+      cofac: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      doyen_et_vice: "bg-university-secondary/10 text-university-secondary",
     }
     return <Badge className={colors[type]}>{type}</Badge>
   }
@@ -442,13 +532,13 @@ export function PeopleManagement() {
         )
       case "professeur":
         return <div className="text-xs text-muted-foreground">{person.titre && <div>Titre: {person.titre}</div>}</div>
-      case "COFAC":
+      case "cofac":
         return (
           <div className="text-xs text-muted-foreground">
             {person.appartenance && <div>Appartenance: {person.appartenance}</div>}
           </div>
         )
-      case "doyenEtVice":
+      case "doyen_et_vice":
         return (
           <div className="text-xs text-muted-foreground">
             {person.responsabilite && <div>Responsabilité: {person.responsabilite}</div>}
@@ -564,7 +654,7 @@ export function PeopleManagement() {
             </div>
           </div>
         )
-      case "COFAC":
+      case "cofac":
         return (
           <div className="grid gap-2">
             <Label htmlFor={`${prefix}appartenance`}>Appartenance</Label>
@@ -590,7 +680,7 @@ export function PeopleManagement() {
             </div>
           </div>
         )
-      case "doyenEtVice":
+      case "doyen_et_vice":
         return (
           <div className="grid gap-2">
             <Label htmlFor={`${prefix}responsabilite`}>Responsabilité</Label>
@@ -625,8 +715,8 @@ export function PeopleManagement() {
     return {
       pat: people.filter((p) => p.type === "pat").length,
       professeur: people.filter((p) => p.type === "professeur").length,
-      COFAC: people.filter((p) => p.type === "COFAC").length,
-      doyenEtVice: people.filter((p) => p.type === "doyenEtVice").length,
+      cofac: people.filter((p) => p.type === "cofac").length,
+      doyen_et_vice: people.filter((p) => p.type === "doyen_et_vice").length,
     }
   }
 
@@ -727,8 +817,8 @@ export function PeopleManagement() {
                       <SelectContent>
                         <SelectItem value="pat">PAT</SelectItem>
                         <SelectItem value="professeur">Professeur</SelectItem>
-                        <SelectItem value="COFAC">COFAC</SelectItem>
-                        <SelectItem value="doyenEtVice">Tête de la Fac</SelectItem>
+                        <SelectItem value="cofac">COFAC</SelectItem>
+                        <SelectItem value="doyen_et_vice">Doyen et Vice</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -773,21 +863,21 @@ export function PeopleManagement() {
                   {tabCounts.professeur}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="COFAC" className="flex items-center gap-2">
+              <TabsTrigger value="cofac" className="flex items-center gap-2">
                 COFAC
                 <Badge variant="secondary" className="text-xs">
-                  {tabCounts.COFAC}
+                  {tabCounts.cofac}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="doyenEtVice" className="flex items-center gap-2">
+              <TabsTrigger value="doyen_et_vice" className="flex items-center gap-2">
                 Tête
                 <Badge variant="secondary" className="text-xs">
-                  {tabCounts.doyenEtVice}
+                  {tabCounts.doyen_et_vice}
                 </Badge>
               </TabsTrigger>
             </TabsList>
 
-            {(["pat", "professeur", "COFAC", "doyenEtVice"] as PersonType[]).map((tabType) => (
+            {(["pat", "professeur", "cofac", "doyen_et_vice"] as PersonType[]).map((tabType) => (
               <TabsContent key={tabType} value={tabType} className="space-y-4">
                 {filteredPeople.length === 0 ? (
                   <div className="text-center py-8">
@@ -940,8 +1030,8 @@ export function PeopleManagement() {
                 <SelectContent>
                   <SelectItem value="pat">PAT</SelectItem>
                   <SelectItem value="professeur">Professeur</SelectItem>
-                  <SelectItem value="COFAC">COFAC</SelectItem>
-                  <SelectItem value="doyenEtVice">Tête de la Fac</SelectItem>
+                  <SelectItem value="cofac">COFAC</SelectItem>
+                  <SelectItem value="doyen_et_vice">Tête de la Fac</SelectItem>
                 </SelectContent>
               </Select>
             </div>

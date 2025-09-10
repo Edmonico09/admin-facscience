@@ -108,12 +108,12 @@ export function Dashboard() {
                 <div key={index} className="p-3 rounded-lg border border-border">
                   <h4 className="text-sm font-medium text-foreground mb-1">{event.titre}</h4>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{event.date_commencement?.toDateString()}</span>
+                    <span>{event.dateCommencement?.toDateString()}</span>
                     <span>•</span>
-                    <span>{event.date_fin?.toDateString()}</span>
+                    <span>{event.dateFin?.toDateString()}</span>
                   </div>
                   <Badge variant="outline" className="mt-2 text-xs">
-                    {event.id_categorie}
+                    {event.categorie}
                   </Badge>
                 </div>
               ))}
