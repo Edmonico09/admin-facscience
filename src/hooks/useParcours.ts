@@ -70,7 +70,7 @@ export function useParcours() {
       }
       addActivity(activity);
       setParcours(prev =>
-        prev.map(m => (m.idParcours === id_ ? data : m))
+        prev.map(m => (m.id_parcours === id_ ? data : m))
       );
     } catch (err: any) {
       setError(err.message || "Erreur lors de la mise à jour du parcours");
@@ -91,7 +91,7 @@ export function useParcours() {
         status: "success",
       }
       addActivity(activity);
-      setParcours(prev => prev.filter(m => m.idParcours !== id_));
+      setParcours(prev => prev.filter(m => m.id_parcours !== id_));
     } catch (err: any) {
       setError(err.message || "Erreur lors de la suppression du parcours");
     } finally {

@@ -4,79 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import {
-  GraduationCap,
-  BookOpen,
-  Newspaper,
-  FlaskConical,
-  Users,
   TrendingUp,
   Calendar,
   AlertCircle,
 } from "lucide-react"
+import { useDashboard } from "@/hooks/use-dashboard"
 
 export function Dashboard() {
-  const stats = [
-    { title: "Mentions", value: "12", icon: GraduationCap, color: "text-university-primary", change: "+2" },
-    { title: "Parcours", value: "45", icon: BookOpen, color: "text-university-secondary", change: "+8" },
-    { title: "Actualités", value: "23", icon: Newspaper, color: "text-blue-600", change: "+5" },
-    { title: "Laboratoires", value: "8", icon: FlaskConical, color: "text-green-600", change: "+1" },
-    { title: "Personnes", value: "156", icon: Users, color: "text-purple-600", change: "+12" },
-    { title: "Activité", value: "+15%", icon: TrendingUp, color: "text-orange-600", change: "+3%" },
-  ]
-
-  const recentActivities = [
-    {
-      type: "mention",
-      title: "Nouvelle mention 'Informatique' ajoutée",
-      time: "Il y a 2 heures",
-      status: "success",
-    },
-    {
-      type: "parcours",
-      title: "Parcours 'IA et Data Science' mis à jour",
-      time: "Il y a 4 heures",
-      status: "info",
-    },
-    {
-      type: "news",
-      title: "3 nouvelles actualités publiées",
-      time: "Il y a 6 heures",
-      status: "success",
-    },
-    {
-      type: "lab",
-      title: "Laboratoire 'LRIT' - Nouveau responsable assigné",
-      time: "Il y a 1 jour",
-      status: "warning",
-    },
-    {
-      type: "people",
-      title: "5 nouveaux professeurs ajoutés",
-      time: "Il y a 2 jours",
-      status: "success",
-    },
-  ]
-
-  const upcomingEvents = [
-    {
-      title: "Réunion du conseil pédagogique",
-      date: "15 Jan 2025",
-      time: "14:00",
-      type: "meeting",
-    },
-    {
-      title: "Soutenance de thèse - Informatique",
-      date: "18 Jan 2025",
-      time: "10:00",
-      type: "defense",
-    },
-    {
-      title: "Conférence internationale IA",
-      date: "22 Jan 2025",
-      time: "09:00",
-      type: "conference",
-    },
-  ]
+  const {stats, recentActivities, upcomingEvents} = useDashboard();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -171,14 +106,14 @@ export function Dashboard() {
             <div className="space-y-4">
               {upcomingEvents.map((event, index) => (
                 <div key={index} className="p-3 rounded-lg border border-border">
-                  <h4 className="text-sm font-medium text-foreground mb-1">{event.title}</h4>
+                  <h4 className="text-sm font-medium text-foreground mb-1">{event.titre}</h4>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{event.date}</span>
+                    <span>{event.date_commencement?.toDateString()}</span>
                     <span>•</span>
-                    <span>{event.time}</span>
+                    <span>{event.date_fin?.toDateString()}</span>
                   </div>
                   <Badge variant="outline" className="mt-2 text-xs">
-                    {event.type}
+                    {event.id_categorie}
                   </Badge>
                 </div>
               ))}
@@ -187,7 +122,7 @@ export function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-university-primary">Progression des Objectifs</CardTitle>
@@ -215,9 +150,9 @@ export function Dashboard() {
               <Progress value={90} className="h-2" />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="text-university-primary flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
@@ -246,8 +181,8 @@ export function Dashboard() {
               </div>
             </div>
           </CardContent>
-        </Card>
-      </div>
+        </Card> */}
+      {/* </div> */}
     </div>
   )
 }

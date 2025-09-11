@@ -16,10 +16,10 @@ export enum FormationEnum {
 }
 
 export interface Parcours {
-  idParcours?: number;            
-  idMention: number;            
-  nomParcours: string;          
-  niveauParcours?: NiveauEnum;   
-  formationType: FormationEnum;  
-  descriptionParcours?: string;  
+  id_parcours?: number;            
+  id_mention: number;            
+  nom_parcours: string;          
+  niveau_parcours?: NiveauEnum;   
+  formation_type: FormationEnum;  
+  description_parcours?: string;  
 }

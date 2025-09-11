@@ -1,6 +1,6 @@
 export interface Mention {
-  idMention?: number;          
-  nomMention: string;        
+  id_mention?: number;          
+  nom_mention: string;        
   abbreviation: string;        
-  descriptionMention?: string;
+  description_mention?: string;
 }

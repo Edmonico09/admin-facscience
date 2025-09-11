@@ -26,10 +26,10 @@ export function RenderPacoursCardList({mention, mentionParcours, handleDelete, h
     // } 
 
     return(
-    <Card key={mention.idMention}>
+    <Card key={mention.id_mention}>
       <CardHeader>
         <CardTitle className="text-lg text-university-primary">
-          {mention.nomMention} ({mention.abbreviation})
+          {mention.nom_mention} ({mention.abbreviation})
           <Badge variant="outline" className="ml-2">
             {mentionParcours.length} parcours
           </Badge>
@@ -38,19 +38,27 @@ export function RenderPacoursCardList({mention, mentionParcours, handleDelete, h
       <CardContent>
         <div className="grid gap-4">
           {mentionParcours.map((p) => (
-            <div key={p.idParcours} className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="border rounded-lg">
+            <div key={p.id_parcours} className="flex items-center justify-between p-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h4 className="font-medium text-foreground">{p.nomParcours}</h4>
-                  <Badge className={getNiveauBadgeColor(p.niveauParcours || NiveauEnum.L1)}>{p.niveauParcours}</Badge>
-                  <Badge className={getFormationBadgeColor(p.formationType)}>{p.formationType}</Badge>
+                  <h4 className="font-medium text-foreground">{p.nom_parcours}</h4>
+                  {/* <Badge className={getNiveauBadgeColor(p.niveau_parcours || NiveauEnum.L1)}>{p.niveau_parcours}</Badge>
+                  <Badge className={getFormationBadgeColor(p.formation_type)}>{p.formation_type}</Badge> */}
                 </div>
-                {p.descriptionParcours && <p className="text-sm text-muted-foreground mb-2">{p.descriptionParcours}</p>}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{p.niveauParcours}</span>
+                {p.description_parcours && <p className="text-sm text-muted-foreground mb-2">{p.description_parcours}</p>}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Parcours:</span>
+                  <span><Badge className={getNiveauBadgeColor(p.niveau_parcours || NiveauEnum.L1)}>{p.niveau_parcours}</Badge></span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Niveau:</span>
+                  <span>{<Badge className={getFormationBadgeColor(p.formation_type)}>{p.formation_type}</Badge>}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+            </div>
+            
+            <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -64,14 +72,14 @@ export function RenderPacoursCardList({mention, mentionParcours, handleDelete, h
                     <AlertDialogHeader>
                       <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Êtes-vous sûr de vouloir supprimer le parcours "{p.nomParcours}" ? Cette action
+                        Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
                         est irréversible.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Annuler</AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => handleDelete(p.idParcours||0)}
+                        onClick={() => handleDelete(p.id_parcours||0)}
                         className="bg-destructive hover:bg-destructive/90"
                       >
                         Supprimer

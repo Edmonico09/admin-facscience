@@ -37,25 +37,25 @@ export const RenderPacoursTable = ({filteredParcours, mentions, handleEdit, hand
       </TableHeader>
       <TableBody>
         {filteredParcours.map((p) => {
-          const mention = mentions.find((m) => m.idMention === p.idMention)
+          const mention = mentions.find((m) => m.id_mention === p.id_mention)
           return (
-            <TableRow key={p.idParcours}>
+            <TableRow key={p.id_parcours}>
               <TableCell>
                 <div>
-                  <div className="font-medium">{p.nomParcours}</div>
-                  {p.descriptionParcours && (
-                    <div className="text-sm text-muted-foreground truncate max-w-xs">{p.descriptionParcours}</div>
+                  <div className="font-medium">{p.nom_parcours}</div>
+                  {p.description_parcours && (
+                    <div className="text-sm text-muted-foreground truncate max-w-xs">{p.description_parcours}</div>
                   )}
                 </div>
               </TableCell>
               <TableCell>
-                {mention?.nomMention} ({mention?.abbreviation})
+                {mention?.nom_mention} ({mention?.abbreviation})
               </TableCell>
               <TableCell>
-                <Badge className={getNiveauBadgeColor(p.niveauParcours||NiveauEnum.L1)}>{p.niveauParcours}</Badge>
+                <Badge className={getNiveauBadgeColor(p.niveau_parcours||NiveauEnum.L1)}>{p.niveau_parcours}</Badge>
               </TableCell>
               <TableCell>
-                <Badge className={getFormationBadgeColor(p.formationType)}>{p.formationType}</Badge>
+                <Badge className={getFormationBadgeColor(p.formation_type)}>{p.formation_type}</Badge>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2">
@@ -72,14 +72,14 @@ export const RenderPacoursTable = ({filteredParcours, mentions, handleEdit, hand
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Êtes-vous sûr de vouloir supprimer le parcours "{p.nomParcours}" ? Cette action
+                          Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
                           est irréversible.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Annuler</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleDelete(p.idParcours||0)}
+                          onClick={() => handleDelete(p.id_parcours||0)}
                           className="bg-destructive hover:bg-destructive/90"
                         >
                           Supprimer
