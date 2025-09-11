@@ -374,7 +374,7 @@ export function ParcoursManagement() {
                         <Badge variant="outline" className="ml-2">
                           {mentionParcours.length} parcours
                         </Badge>
-                      </div>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="px-3 sm:px-6">
                       <div className="space-y-4">
