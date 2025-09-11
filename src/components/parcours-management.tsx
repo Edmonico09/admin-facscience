@@ -17,20 +17,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+//   AlertDialogTrigger,
+// } from "@/components/ui/alert-dialog"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Search, Edit, Trash2, BookOpen } from "lucide-react"
+import { Plus, Search, BookOpen } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { FormationEnum, NiveauEnum, Parcours } from "@/services/types/parcours"
 import { useMention } from "@/hooks/useMention"
@@ -375,65 +376,6 @@ export function ParcoursManagement() {
                     handleDelete={handleDelete} 
                     handleEdit={handleEdit}                    
                   />
-                  // <Card key={mention.id_mention}>
-                  //   <CardHeader>
-                  //     <CardTitle className="text-lg text-university-primary">
-                  //       {mention.nom_mention} ({mention.abbreviation})
-                  //       <Badge variant="outline" className="ml-2">
-                  //         {mentionParcours.length} parcours
-                  //       </Badge>
-                  //     </CardTitle>
-                  //   </CardHeader>
-                  //   <CardContent className="px-3 sm:px-6">
-                  //     <div className="space-y-4">
-                  //       {mentionParcours.map((p) => (
-                  //         <div key={p.id_parcours} className="flex items-center justify-between p-4 border rounded-lg">
-                  //           <div className="flex-1">
-                  //             <div className="flex items-center gap-3 mb-2">
-                  //               <h4 className="font-medium text-foreground">{p.nom_parcours}</h4>
-                  //               <Badge className={getNiveauBadgeColor(p.niveau_parcours||NiveauEnum.L1)}>{p.niveau_parcours}</Badge>
-                  //               <Badge className={getFormationBadgeColor(p.formation_type)}>{p.formation_type}</Badge>
-                  //             </div>
-                  //             {p.description_parcours && <p className="text-sm text-muted-foreground mb-2">{p.description_parcours}</p>}
-                  //             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  //               <span>{p.niveau_parcours}</span>
-                  //             </div>
-                  //           </div>
-                  //           <div className="flex items-center gap-2">
-                  //             <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
-                  //               <Edit className="h-4 w-4" />
-                  //             </Button>
-                  //             <AlertDialog>
-                  //               <AlertDialogTrigger asChild>
-                  //                 <Button variant="outline" size="sm">
-                  //                   <Trash2 className="h-4 w-4" />
-                  //                 </Button>
-                  //               </AlertDialogTrigger>
-                  //               <AlertDialogContent>
-                  //                 <AlertDialogHeader>
-                  //                   <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                  //                   <AlertDialogDescription>
-                  //                     Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
-                  //                     est irréversible.
-                  //                   </AlertDialogDescription>
-                  //                 </AlertDialogHeader>
-                  //                 <AlertDialogFooter>
-                  //                   <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  //                   <AlertDialogAction
-                  //                     onClick={() => handleDelete(p.id_parcours||0)}
-                  //                     className="bg-destructive hover:bg-destructive/90"
-                  //                   >
-                  //                     Supprimer
-                  //                   </AlertDialogAction>
-                  //                 </AlertDialogFooter>
-                  //               </AlertDialogContent>
-                  //             </AlertDialog>
-                  //           </div>
-                  //         </div>
-                  //       ))}
-                  //     </div>
-                  //   </CardContent>
-                  // </Card>
                 ))
               )}
             </TabsContent>
@@ -441,75 +383,7 @@ export function ParcoursManagement() {
             <TabsContent value="table">
               <div className="rounded-md border">
                 <RenderPacoursTable filteredParcours={filteredParcours} mentions={mentions} handleEdit={handleEdit} handleDelete={handleDelete} />
-                {/* <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Parcours</TableHead>
-                      <TableHead>Mention</TableHead>
-                      <TableHead>Niveau</TableHead>
-                      <TableHead>Formation</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredParcours.map((p) => {
-                      const mention = mentions.find((m) => m.id_mention === p.id_mention)
-                      return (
-                        <TableRow key={p.id_parcours}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{p.nom_parcours}</div>
-                              {p.description_parcours && (
-                                <div className="text-sm text-muted-foreground truncate max-w-xs">{p.description_parcours}</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {mention?.nom_mention} ({mention?.abbreviation})
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getNiveauBadgeColor(p.niveau_parcours||NiveauEnum.L1)}>{p.niveau_parcours}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getFormationBadgeColor(p.formation_type)}>{p.formation_type}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Êtes-vous sûr de vouloir supprimer le parcours "{p.nom_parcours}" ? Cette action
-                                      est irréversible.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(p.id_parcours||0)}
-                                      className="bg-destructive hover:bg-destructive/90"
-                                    >
-                                      Supprimer
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table> */}
+                
               </div>
 
               {filteredParcours.length === 0 && (
@@ -619,7 +493,7 @@ export function ParcoursManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <div className="w-[100%] min-h-96 bg-yellow-200 grid grid-rows-11 grid-cols-7 items-center gap-0">
+      {/* <div className="w-[100%] min-h-96 bg-yellow-200 grid grid-rows-11 grid-cols-7 items-center gap-0">
         <div className="row-span-1 col-span-7 flex justify-center items-center">
             <div className="p-2 bg-white">COFAC</div>
         </div>
@@ -673,7 +547,7 @@ export function ParcoursManagement() {
         <div>AAAAA</div>
         <div>AAAAA</div>
         <div>AAAAA</div>
-      </div>
+      </div> */}
     </div>
   )
 }

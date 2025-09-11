@@ -1,12 +1,27 @@
 export interface Actualite {
-  id_actualite?: number;          
+  idActualite?: number;          
   titre: string;                 
-  id_categorie: string;          
+  categorie: string;          
   description?: string;          
   contenu?: string;              
-  date_creation?: Date;          
-  date_mise_a_jour?: Date;       
-  date_commencement?: Date;      
-  date_fin?: Date;               
-  lieu?: string;                 
+  dateCreation?: Date;          
+  dateMiseAJour?: Date;       
+  dateCommencement?: Date;      
+  dateFin?: Date;               
+  lieu?: string;    
+  statut:string;
+  medias: Media[]             
+}
+
+
+export interface Category {
+    id : number;
+    name : string;
+}
+
+export interface Media {
+  idMedia? : number,
+  chemin:string,
+  mimetype:string,
+  media:string
 }

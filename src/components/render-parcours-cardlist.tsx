@@ -37,6 +37,7 @@ export function RenderPacoursCardList({mention, mentionParcours, handleDelete, h
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
+
           {mentionParcours.map((p) => (
             <div className="border rounded-lg">
             <div key={p.id_parcours} className="flex items-center justify-between p-4">
@@ -58,14 +59,16 @@ export function RenderPacoursCardList({mention, mentionParcours, handleDelete, h
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
-                  <Edit className="h-4 w-4" />
+            <div className="flex gap-2 border-t p-3 ">
+                <Button variant="outline" size="sm" onClick={() => handleEdit(p)} className="flex-1" >
+                  <Edit className="h-4 w-4 mr-2" />
+                  <div>Modifier</div>
                 </Button>
                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Trash2 className="h-4 w-4" />
+                  <AlertDialogTrigger className="text-red-500 hover:bg-red-500 hover:text-white" asChild>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      <div>Supprimer</div>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>

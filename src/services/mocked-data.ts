@@ -48,34 +48,40 @@ export const recentActivities = [
 
 export const upcomingEvents: Actualite[] = [
   {
-    id_actualite: 1,
+    idActualite: 1,
     titre: "Réunion du conseil pédagogique",
-    id_categorie: 'Reunion',
+    categorie: 'Reunion',
     description: "Réunion pour discuter des nouvelles orientations pédagogiques.",
-    date_creation: new Date(),
-    date_commencement: new Date("2025-01-15T14:00:00"),
-    date_fin: new Date("2025-01-15T15:00:00"),
+    dateCreation: new Date(),
+    dateCommencement: new Date("2025-01-15T14:00:00"),
+    dateFin: new Date("2025-01-15T15:00:00"),
     lieu: "Salle A",
+    statut: "",
+    medias: []
   },
   {
-    id_actualite: 2,
+    idActualite: 2,
     titre: "Soutenance de thèse - Informatique",
-    id_categorie: 'Soutenance',
+    categorie: 'Soutenance',
     description: "Soutenance de thèse pour le département d'informatique.",
-    date_creation: new Date(),
-    date_commencement: new Date("2025-01-18T10:00:00"),
-    date_fin: new Date("2025-01-18T12:00:00"),
+    dateCreation: new Date(),
+    dateCommencement: new Date("2025-01-18T10:00:00"),
+    dateFin: new Date("2025-01-18T12:00:00"),
     lieu: "Amphi B",
+    statut: "",
+    medias: []
   },
   {
-    id_actualite: 3,
+    idActualite: 3,
     titre: "Conférence internationale IA",
-    id_categorie: 'Conference',
+    categorie: 'Conference',
     description: "Conférence internationale sur l'intelligence artificielle.",
-    date_creation: new Date(),
-    date_commencement: new Date("2025-01-22T09:00:00"),
-    date_fin: new Date("2025-01-22T17:00:00"),
+    dateCreation: new Date(),
+    dateCommencement: new Date("2025-01-22T09:00:00"),
+    dateFin: new Date("2025-01-22T17:00:00"),
     lieu: "Centre de conférence",
+    statut: "",
+    medias: []
   },
 ];
 

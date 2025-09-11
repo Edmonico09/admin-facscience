@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,122 +32,151 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, Edit, Trash2, Newspaper, Calendar, MapPin, ImageIcon, X, Tag } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Actualite, Category, Media } from "@/services/types/event"
+import { createCategory, createMedia, createNews, deleteMedia, deleteNews, getCategory, getNews, UpdateNews, updateStatus } from "@/services/api/event.api"
 
-interface Category {
-  id: number
-  nom: string
-  couleur: string
-}
 
-interface MediaFile {
-  id: string
-  type: "image" | "video"
-  url: string
-  name: string
-}
+// interface MediaFile {
+//   id: string
+//   type: "image" | "video"
+//   url: string
+//   name: string
+// }
 
-interface News {
-  id: number
-  titre: string
-  categorie: number
-  description: string
-  contenu: string
-  date_commencement: string
-  date_fin: string | null
-  lieu: string
-  dateCreation: string
-  auteur: string
-  statut: "draft" | "published" | "archived"
-  medias: MediaFile[]
-}
+// interface News {
+//   id: number
+//   titre: string
+//   categorie: number
+//   description: string
+//   contenu: string
+//   dateCommencement: string
+//   dateFin: string | null
+//   lieu: string
+//   dateCreation: string
+//   auteur: string
+//   statut: "draft" | "published" | "archived"
+//   medias: MediaFile[]
+// }
 
-const mockCategories: Category[] = [
-  { id: 1, nom: "Événements", couleur: "#780376" },
-  { id: 2, nom: "Actualités", couleur: "#e6b20b" },
-  { id: 3, nom: "Recherche", couleur: "#2563eb" },
-  { id: 4, nom: "Formations", couleur: "#16a34a" },
-  { id: 5, nom: "Partenariats", couleur: "#dc2626" },
-]
+// const mockCategories: Category[] = [
+//   { id: 1, nom: "Événements", couleur: "#780376" },
+//   { id: 2, nom: "Actualités", couleur: "#e6b20b" },
+//   { id: 3, nom: "Recherche", couleur: "#2563eb" },
+//   { id: 4, nom: "Formations", couleur: "#16a34a" },
+//   { id: 5, nom: "Partenariats", couleur: "#dc2626" },
+// ]
 
-const mockNews: News[] = [
-  {
-    id: 1,
-    titre: "Conférence Internationale sur l'Intelligence Artificielle",
-    categorie: 1,
-    description: "Une conférence majeure réunissant les experts mondiaux en IA",
-    contenu:
-      "La faculté organise une conférence internationale sur l'intelligence artificielle qui se déroulera du 15 au 17 mars 2025. Cet événement réunira des chercheurs, des industriels et des étudiants pour échanger sur les dernières avancées en IA.",
-    date_commencement: "2025-03-15T09:00",
-    date_fin: "2025-03-17T18:00",
-    lieu: "Amphithéâtre Principal",
-    dateCreation: "2025-01-10",
-    auteur: "Dr. Ahmed Benali",
-    statut: "published",
-    medias: [{ id: "1", type: "image", url: "/ai-conference-poster.jpg", name: "conference-ai.jpg" }],
-  },
-  {
-    id: 2,
-    titre: "Nouveau Master en Data Science",
-    categorie: 4,
-    description: "Lancement d'un nouveau programme de Master spécialisé en science des données",
-    contenu:
-      "La faculté lance un nouveau programme de Master en Data Science à partir de la rentrée 2025. Ce programme innovant combine théorie et pratique pour former les futurs experts en analyse de données.",
-    date_commencement: "2025-09-01T08:00",
-    date_fin: null,
-    lieu: "Campus Principal",
-    dateCreation: "2025-01-08",
-    auteur: "Prof. Fatima Zahra",
-    statut: "published",
-    medias: [{ id: "2", type: "image", url: "/data-science-program.jpg", name: "master-data-science.jpg" }],
-  },
-  {
-    id: 3,
-    titre: "Partenariat avec Google Research",
-    categorie: 5,
-    description: "Signature d'un accord de partenariat stratégique avec Google Research",
-    contenu:
-      "L'université vient de signer un accord de partenariat avec Google Research pour développer des projets de recherche conjoints en intelligence artificielle et machine learning.",
-    date_commencement: "2025-01-20T14:00",
-    date_fin: null,
-    lieu: "Salle de Conférence",
-    dateCreation: "2025-01-05",
-    auteur: "Recteur Mohamed Alami",
-    statut: "draft",
-    medias: [],
-  },
-]
+// const mockNews: News[] = [
+//   {
+//     id: 1,
+//     titre: "Conférence Internationale sur l'Intelligence Artificielle",
+//     categorie: 1,
+//     description: "Une conférence majeure réunissant les experts mondiaux en IA",
+//     contenu:
+//       "La faculté organise une conférence internationale sur l'intelligence artificielle qui se déroulera du 15 au 17 mars 2025. Cet événement réunira des chercheurs, des industriels et des étudiants pour échanger sur les dernières avancées en IA.",
+//     dateCommencement: "2025-03-15T09:00",
+//     dateFin: "2025-03-17T18:00",
+//     lieu: "Amphithéâtre Principal",
+//     dateCreation: "2025-01-10",
+//     auteur: "Dr. Ahmed Benali",
+//     statut: "published",
+//     medias: [{ id: "1", type: "image", url: "/ai-conference-poster.jpg", name: "conference-ai.jpg" }],
+//   },
+//   {
+//     id: 2,
+//     titre: "Nouveau Master en Data Science",
+//     categorie: 4,
+//     description: "Lancement d'un nouveau programme de Master spécialisé en science des données",
+//     contenu:
+//       "La faculté lance un nouveau programme de Master en Data Science à partir de la rentrée 2025. Ce programme innovant combine théorie et pratique pour former les futurs experts en analyse de données.",
+//     dateCommencement: "2025-09-01T08:00",
+//     dateFin: null,
+//     lieu: "Campus Principal",
+//     dateCreation: "2025-01-08",
+//     auteur: "Prof. Fatima Zahra",
+//     statut: "published",
+//     medias: [{ id: "2", type: "image", url: "/data-science-program.jpg", name: "master-data-science.jpg" }],
+//   },
+//   {
+//     id: 3,
+//     titre: "Partenariat avec Google Research",
+//     categorie: 5,
+//     description: "Signature d'un accord de partenariat stratégique avec Google Research",
+//     contenu:
+//       "L'université vient de signer un accord de partenariat avec Google Research pour développer des projets de recherche conjoints en intelligence artificielle et machine learning.",
+//     dateCommencement: "2025-01-20T14:00",
+//     dateFin: null,
+//     lieu: "Salle de Conférence",
+//     dateCreation: "2025-01-05",
+//     auteur: "Recteur Mohamed Alami",
+//     statut: "draft",
+//     medias: [],
+//   },
+// ]
 
 export function NewsManagement() {
-  const [news, setNews] = useState<News[]>(mockNews)
-  const [categories, setCategories] = useState<Category[]>(mockCategories)
+
+   useEffect(() => {
+      const fetchOptions = async () => {
+        try {
+          const categories = await getCategory();
+          setCategories(categories);
+        } catch (err) {
+          toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
+        }
+      };
+    
+      fetchOptions();
+    }, []);
+  
+     useEffect(() => {
+      const fetchNews = async () => {
+        try {
+          const news_ = await getNews();
+          setNews(news_);
+        } catch (err) {
+          toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
+        }
+      };
+    
+      fetchNews();
+    }, []);
+  
+  const [categories, setCategories] = useState<Category[]>([])
+
+  const [news, setNews] = useState<Actualite[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
-  const [editingNews, setEditingNews] = useState<News | null>(null)
-  const [formData, setFormData] = useState({
-    titre: "",
-    categorie: "",
-    description: "",
-    contenu: "",
-    date_commencement: "",
-    date_fin: "",
-    lieu: "",
-    medias: [] as MediaFile[],
+  const [editingNews, setEditingNews] = useState<Actualite | null>(null)
+  const [formData, setFormData] = useState<Actualite>({
+      titre: "" ,          
+      categorie: "" ,         
+      description: undefined ,          
+      contenu: undefined ,          
+      dateCreation: undefined,      
+      dateMiseAJour: undefined,       
+      dateCommencement: undefined,      
+      dateFin: undefined,               
+      lieu: undefined,    
+      statut:"",
+      medias: []             
+
   })
   const [categoryForm, setCategoryForm] = useState({
     nom: "",
-    couleur: "#780376",
   })
   const { toast } = useToast()
 
   const filteredNews = news.filter((n) => {
     const matchesSearch =
       n.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.lieu.toLowerCase().includes(searchTerm.toLowerCase())
+      n.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      n.lieu?.toLowerCase().includes(searchTerm.toLowerCase())
+
     const matchesCategory = selectedCategory === "all" || n.categorie.toString() === selectedCategory
     const matchesStatus = selectedStatus === "all" || n.statut === selectedStatus
 
@@ -156,18 +185,21 @@ export function NewsManagement() {
 
   const resetForm = () => {
     setFormData({
-      titre: "",
-      categorie: "",
-      description: "",
-      contenu: "",
-      date_commencement: "",
-      date_fin: "",
-      lieu: "",
-      medias: [],
+     titre: "" ,          
+      categorie: "" ,         
+      description: undefined ,          
+      contenu: undefined ,          
+      dateCreation: undefined,      
+      dateMiseAJour: undefined,       
+      dateCommencement: undefined,      
+      dateFin: undefined,               
+      lieu: undefined,    
+      statut:"",
+      medias: []        
     })
   }
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!categoryForm.nom) {
       toast({
         title: "Erreur",
@@ -177,41 +209,92 @@ export function NewsManagement() {
       return
     }
 
-    const newCategory: Category = {
-      id: Math.max(...categories.map((c) => c.id)) + 1,
-      nom: categoryForm.nom,
-      couleur: categoryForm.couleur,
+    try{
+      const newCategory =  await createCategory(categoryForm.nom);
+    
+      setCategories([...categories, newCategory])
+      setCategoryForm({ nom: ""})
+      setIsCategoryDialogOpen(false)
+      toast({
+        title: "Succès",
+        description: "Catégorie ajoutée avec succès",
+      })
+    } catch(err){
+      toast({
+         title: "Erreur",
+        description: (err as Error).message,
+        variant: "destructive",
+      })
     }
 
-    setCategories([...categories, newCategory])
-    setCategoryForm({ nom: "", couleur: "#780376" })
-    setIsCategoryDialogOpen(false)
+
+
+  }
+
+  const handleAddMedia = async (file : File) => {
+    try {
+      if(!editingNews?.idActualite){
+              throw new Error("Aucune actualité sélectionnée pour uploader un média");
+      }
+      const newMedia = await createMedia(editingNews.idActualite , file);
+  
+  
+      setFormData({
+        ...formData,
+        medias: [...formData.medias, newMedia],
+      })
+
+      toast({
+        title: "Succés",
+        description : "Média ajouté avec succés",
+      })
+    }catch(err){
+       toast({
+        title: "Erreur",
+        description : (err as Error).message,
+        variant : "destructive"
+      })
+    }
+
+  }
+
+  const handleRemoveMedia = async (mediaId: number) => {
+  try {
+    if (!editingNews?.idActualite) {
+      throw new Error("Aucune actualité sélectionnée");
+    }
+
+    await deleteMedia(editingNews.idActualite, mediaId);
+
+    setFormData({
+      ...formData,
+      medias: formData.medias.filter((m) => m.idMedia !== mediaId),
+    });
+
     toast({
       title: "Succès",
-      description: "Catégorie ajoutée avec succès",
-    })
+      description: "Média supprimé avec succès",
+    });
+  } catch (err) {
+    toast({
+      title: "Erreur",
+      description: (err as Error).message,
+      variant: "destructive",
+    });
   }
+};
 
-  const handleAddMedia = () => {
-    // Simulate file upload - in real app, this would handle actual file upload
-    const newMedia: MediaFile = {
-      id: Date.now().toString(),
-      type: "image",
-      url: `/placeholder.svg?height=200&width=300&query=uploaded media ${Date.now()}`,
-      name: `media-${Date.now()}.jpg`,
-    }
+
+const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0]
+    const uploadedMedia = await createMedia(editingNews?.idActualite ?? 0, file)
     setFormData({
       ...formData,
-      medias: [...formData.medias, newMedia],
+      medias: [...formData.medias, uploadedMedia],
     })
   }
-
-  const handleRemoveMedia = (mediaId: string) => {
-    setFormData({
-      ...formData,
-      medias: formData.medias.filter((m) => m.id !== mediaId),
-    })
-  }
+}
 
   const handleAdd = () => {
     if (
@@ -219,7 +302,7 @@ export function NewsManagement() {
       !formData.categorie ||
       !formData.description ||
       !formData.contenu ||
-      !formData.date_commencement
+      !formData.dateCommencement
     ) {
       toast({
         title: "Erreur",
@@ -229,22 +312,22 @@ export function NewsManagement() {
       return
     }
 
-    const newNews: News = {
-      id: Math.max(...news.map((n) => n.id)) + 1,
+    const newNews: Actualite = {
       titre: formData.titre,
-      categorie: Number.parseInt(formData.categorie),
+      categorie: formData.categorie,
       description: formData.description,
       contenu: formData.contenu,
-      date_commencement: formData.date_commencement,
-      date_fin: formData.date_fin || null,
+      dateCommencement: formData.dateCommencement,
+      dateFin: formData.dateFin,
       lieu: formData.lieu,
-      dateCreation: new Date().toISOString().split("T")[0],
-      auteur: "Administrateur",
+      dateCreation: formData.dateCreation,
       statut: "draft",
       medias: formData.medias,
     }
 
-    setNews([...news, newNews])
+    const addNews = createNews(newNews);
+
+    // setNews([...news, newNews])
     setIsAddDialogOpen(false)
     resetForm()
     toast({
@@ -253,28 +336,29 @@ export function NewsManagement() {
     })
   }
 
-  const handleEdit = (n: News) => {
+  const handleEdit = (n: Actualite) => {
     setEditingNews(n)
     setFormData({
       titre: n.titre,
-      categorie: n.categorie.toString(),
+      categorie: n.categorie,
       description: n.description,
       contenu: n.contenu,
-      date_commencement: n.date_commencement,
-      date_fin: n.date_fin || "",
+      dateCommencement: n.dateCommencement,
+      dateFin: n.dateFin || undefined,
       lieu: n.lieu,
+      statut:n.statut,
       medias: [...n.medias],
     })
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (
       !formData.titre ||
-      !formData.categorie ||
+      !formData.categorie||
       !formData.description ||
       !formData.contenu ||
-      !formData.date_commencement ||
+      !formData.dateCommencement ||
       !editingNews
     ) {
       toast({
@@ -285,23 +369,26 @@ export function NewsManagement() {
       return
     }
 
-    const updatedNews = news.map((n) =>
-      n.id === editingNews.id
-        ? {
-            ...n,
-            titre: formData.titre,
-            categorie: Number.parseInt(formData.categorie),
-            description: formData.description,
-            contenu: formData.contenu,
-            date_commencement: formData.date_commencement,
-            date_fin: formData.date_fin || null,
-            lieu: formData.lieu,
-            medias: formData.medias,
-          }
-        : n,
-    )
+    const updatedActualite: Actualite = {
+    ...editingNews,
+    titre: formData.titre,
+    categorie: formData.categorie,
+    description: formData.description,
+    contenu: formData.contenu,
+    dateCommencement: formData.dateCommencement || null,
+    dateFin: formData.dateFin || undefined,
+    dateCreation: formData.dateCreation || undefined,
+    dateMiseAJour: formData.dateMiseAJour || undefined,
+    lieu: formData.lieu,
+    statut: formData.statut,
+    medias: formData.medias,
+  }
 
-    setNews(updatedNews)
+
+    const savedNews = await UpdateNews(updatedActualite)
+    setNews((prev) =>
+      prev.map((n) => (n.idActualite === savedNews.idActualite ? savedNews : n)),
+    )
     setIsEditDialogOpen(false)
     setEditingNews(null)
     resetForm()
@@ -311,22 +398,49 @@ export function NewsManagement() {
     })
   }
 
-  const handleDelete = (id: number) => {
-    setNews(news.filter((n) => n.id !== id))
-    toast({
-      title: "Succès",
-      description: "Actualité supprimée avec succès",
-    })
-  }
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteNews(id);
 
-  const handleStatusChange = (id: number, newStatus: "draft" | "published" | "archived") => {
-    const updatedNews = news.map((n) => (n.id === id ? { ...n, statut: newStatus } : n))
-    setNews(updatedNews)
-    toast({
-      title: "Succès",
-      description: `Statut mis à jour vers ${newStatus}`,
-    })
-  }
+      setNews((prev) => prev.filter((n) => n.idActualite !== id));
+
+      toast({
+        title: "Succès",
+        description: "Actualité supprimée avec succès",
+      });
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
+
+
+ const handleStatusChange = async (
+    idActualite: number,
+    newStatus: "draft" | "published" | "archived"
+  ) => {
+    try {
+      const updatedNews = await updateStatus(idActualite, newStatus);
+
+      setNews((prev) =>
+        prev.map((n) => (n.idActualite === idActualite ? updatedNews : n))
+      );
+
+      toast({
+        title: "Succès",
+        description: `Statut mis à jour vers ${newStatus}`,
+      });
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusBadge = (statut: "draft" | "published" | "archived") => {
     switch (statut) {
@@ -343,19 +457,19 @@ export function NewsManagement() {
     }
   }
 
-  const getCategoryBadge = (categoryId: number) => {
-    const category = categories.find((c) => c.id === categoryId)
-    if (!category) return <Badge variant="outline">Inconnue</Badge>
+  // const getCategoryBadge = (categoryId: number) => {
+  //   const category = categories.find((c) => c.id === categoryId)
+  //   if (!category) return <Badge variant="outline">Inconnue</Badge>
 
-    return (
-      <Badge
-        style={{ backgroundColor: `${category.couleur}20`, color: category.couleur, borderColor: category.couleur }}
-        className="border"
-      >
-        {category.nom}
-      </Badge>
-    )
-  }
+  //   return (
+  //     <Badge
+  //     //   style={{ backgroundColor: `${category.couleur}20`, color: category.couleur, borderColor: category.couleur }}
+  //     //   className="border"
+  //     >
+  //       {category.name}
+  //     </Badge>
+  //   )
+  // }
 
   return (
     <div className="space-y-6">
@@ -408,7 +522,7 @@ export function NewsManagement() {
                         placeholder="Ex: Événements"
                       />
                     </div>
-                    <div className="grid gap-2">
+                    {/* <div className="grid gap-2">
                       <Label htmlFor="category-color">Couleur</Label>
                       <div className="flex gap-2">
                         <Input
@@ -425,21 +539,21 @@ export function NewsManagement() {
                           className="flex-1"
                         />
                       </div>
-                    </div>
+                    </div> */}
                     <div className="space-y-2">
                       <Label>Catégories existantes</Label>
                       <div className="flex flex-wrap gap-2">
                         {categories.map((category) => (
                           <Badge
                             key={category.id}
-                            style={{
-                              backgroundColor: `${category.couleur}20`,
-                              color: category.couleur,
-                              borderColor: category.couleur,
-                            }}
+                            // style={{
+                            //   backgroundColor: `${category.couleur}20`,
+                            //   color: category.couleur,
+                            //   borderColor: category.couleur,
+                            // }}
                             className="border"
                           >
-                            {category.nom}
+                            {category.name}
                           </Badge>
                         ))}
                       </div>
@@ -495,8 +609,8 @@ export function NewsManagement() {
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id.toString()}>
                               <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} />
-                                {category.nom}
+                                {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} /> */}
+                                {category.name}
                               </div>
                             </SelectItem>
                           ))}
@@ -527,19 +641,22 @@ export function NewsManagement() {
                       <div className="grid gap-2">
                         <Label htmlFor="date-debut">Date de début *</Label>
                         <Input
-                          id="date-debut"
-                          type="datetime-local"
-                          value={formData.date_commencement}
-                          onChange={(e) => setFormData({ ...formData, date_commencement: e.target.value })}
-                        />
+                            id="date-debut"
+                            type="datetime-local"
+                            value={formData.dateCommencement?.toISOString().slice(0,16) ?? ""}
+                            onChange={(e) =>
+                              setFormData({ ...formData, dateCommencement: new Date(e.target.value) })
+                            }
+                          />
+
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="date-fin">Date de fin</Label>
                         <Input
                           id="date-fin"
                           type="datetime-local"
-                          value={formData.date_fin}
-                          onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
+                          value={formData.dateFin?.toISOString().slice(0,16) ?? ""}
+                          onChange={(e) => setFormData({ ...formData, dateFin:new Date(e.target.value) })}
                         />
                       </div>
                     </div>
@@ -555,22 +672,30 @@ export function NewsManagement() {
                     <div className="grid gap-2">
                       <Label>Médias</Label>
                       <div className="space-y-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleAddMedia}
-                          className="w-full bg-transparent"
-                        >
-                          <ImageIcon className="h-4 w-4 mr-2" />
-                          Ajouter un média
+
+                       <Button asChild variant="outline" className="w-full bg-transparent">
+                          <label htmlFor="media-upload" className="cursor-pointer flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" />
+                            Ajouter un média
+                            <input
+                              id="media-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleFileChange}
+                            />
+                          </label>
                         </Button>
+
+
+
                         {formData.medias.length > 0 && (
                           <div className="grid grid-cols-2 gap-2">
                             {formData.medias.map((media) => (
-                              <div key={media.id} className="relative border rounded-lg p-2">
+                              <div key={media.idMedia} className="relative border rounded-lg p-2">
                                 <img
-                                  src={media.url || "/placeholder.svg"}
-                                  alt={media.name}
+                                  src={media.chemin || "/placeholder.svg"}
+                                  alt={media.media}
                                   className="w-full h-20 object-cover rounded"
                                 />
                                 <Button
@@ -578,11 +703,15 @@ export function NewsManagement() {
                                   variant="destructive"
                                   size="sm"
                                   className="absolute top-1 right-1 h-6 w-6 p-0"
-                                  onClick={() => handleRemoveMedia(media.id)}
+                                  onClick={() => {
+                                    if (media.idMedia !== undefined) {
+                                      handleRemoveMedia(media.idMedia)
+                                    }
+                                  }}
                                 >
                                   <X className="h-3 w-3" />
                                 </Button>
-                                <p className="text-xs text-muted-foreground mt-1 truncate">{media.name}</p>
+                                <p className="text-xs text-muted-foreground mt-1 truncate">{media.media}</p>
                               </div>
                             ))}
                           </div>
@@ -614,35 +743,33 @@ export function NewsManagement() {
                 className="pl-10"
               />
             </div>
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[100%]">
-                  <SelectValue placeholder="Toutes catégories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes catégories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} />
-                        {category.nom}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-[100%]">
-                  <SelectValue placeholder="Tous statuts" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous statuts</SelectItem>
-                  <SelectItem value="published">Publié</SelectItem>
-                  <SelectItem value="draft">Brouillon</SelectItem>
-                  <SelectItem value="archived">Archivé</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Toutes catégories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes catégories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    <div className="flex items-center gap-2">
+                      {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} /> */}
+                      {category.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Tous statuts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous statuts</SelectItem>
+                <SelectItem value="published">Publié</SelectItem>
+                <SelectItem value="draft">Brouillon</SelectItem>
+                <SelectItem value="archived">Archivé</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Tabs defaultValue="cards" className="w-full">
@@ -664,100 +791,91 @@ export function NewsManagement() {
               ) : (
                 <div className="grid lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredNews.map((n) => (
-                    <Card key={n.id} className="hover:shadow-md transition-shadow flex flex-col">
+                    <Card key={n.idActualite} className="hover:shadow-md transition-shadow">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
                             <CardTitle className="text-lg line-clamp-2">{n.titre}</CardTitle>
                             <div className="flex items-center gap-2 mt-2">
-                              {getCategoryBadge(n.categorie)}
-                              {getStatusBadge(n.statut)}
+                              {/* {getCategoryBadge(n.categorie)} */}
+                              {getStatusBadge(n.statut as "draft" | "published" | "archived")}
                             </div>
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="flex-1 flex flex-col">
-                        <div className="flex-1 space-y-3">
-                          {n.medias.length > 0 && (
-                            <img
-                              src={n.medias[0].url || "/placeholder.svg"}
-                              alt={n.titre}
-                              className="w-full h-32 object-cover rounded-md"
-                            />
-                          )}
-                          <div>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
-                          </div>
-                          <div className="space-y-1 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>{new Date(n.date_commencement).toLocaleDateString("fr-FR")}</span>
-                              {n.date_fin && (
-                                <>
-                                  <span>-</span>
-                                  <span>{new Date(n.date_fin).toLocaleDateString("fr-FR")}</span>
-                                </>
-                              )}
-                            </div>
-                            {n.lieu && (
-                              <div className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                <span>{n.lieu}</span>
-                              </div>
+                      <CardContent className="space-y-3">
+                        {n.medias.length > 0 && (
+                          <img
+                            src={n.medias[0].chemin || "/placeholder.svg"}
+                            alt={n.titre}
+                            className="w-full h-32 object-cover rounded-md"
+                          />
+                        )}
+                        <p className="text-sm text-muted-foreground line-clamp-2">{n.description}</p>
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{n.dateCommencement ? new Date(n.dateCommencement).toLocaleDateString("fr-FR") : "-"}</span>
+                            {n.dateFin && (
+                              <>
+                                <span>-</span>
+                                <span>{new Date(n.dateFin).toLocaleDateString("fr-FR")}</span>
+                              </>
                             )}
                           </div>
+                          {n.lieu && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              <span>{n.lieu}</span>
+                            </div>
+                          )}
                         </div>
-                        
-                        <div className="pt-3 border-t mt-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" onClick={() => handleEdit(n)}>
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Êtes-vous sûr de vouloir supprimer l'actualité "{n.titre}" ? Cette action est
-                                      irréversible.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(n.id)}
-                                      className="bg-destructive hover:bg-destructive/90"
-                                    >
-                                      Supprimer
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                            <div className="flex-1">
-                              <Select
-                                value={n.statut}
-                                onValueChange={(value: "draft" | "published" | "archived") =>
-                                  handleStatusChange(n.id, value)
-                                }
-                              >
-                                <SelectTrigger className="w-full h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="draft">Brouillon</SelectItem>
-                                  <SelectItem value="published">Publier</SelectItem>
-                                  <SelectItem value="archived">Archiver</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="flex gap-1">
+                            <Button variant="outline" size="sm" onClick={() => handleEdit(n)}>
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Êtes-vous sûr de vouloir supprimer l'actualité "{n.titre}" ? Cette action est
+                                    irréversible.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(n.idActualite!)}
+                                    className="bg-destructive hover:bg-destructive/90"
+                                  >
+                                    Supprimer
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
+                          <Select
+                            value={n.statut}
+                            onValueChange={(value: "draft" | "published" | "archived") =>
+                              handleStatusChange(n.idActualite!, value)
+                            }
+                          >
+                            <SelectTrigger className="w-24 h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="draft">Brouillon</SelectItem>
+                              <SelectItem value="published">Publier</SelectItem>
+                              <SelectItem value="archived">Archiver</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </CardContent>
                     </Card>
@@ -781,26 +899,27 @@ export function NewsManagement() {
                   </TableHeader>
                   <TableBody>
                     {filteredNews.map((n) => (
-                      <TableRow key={n.id}>
+                      <TableRow key={n.idActualite}>
                         <TableCell>
                           <div>
                             <div className="font-medium">{n.titre}</div>
                             <div className="text-sm text-muted-foreground truncate max-w-xs">{n.description}</div>
                           </div>
                         </TableCell>
+                        {/* <TableCell>{getCategoryBadge(n.id)}</TableCell> */}
                         <TableCell>
-                          <div className="flex justify-center text-sm">
-                            <div>{new Date(n.date_commencement).toLocaleDateString("fr-FR")}</div>
-                            {n.date_fin && (
+                          <div className="text-sm">
+                            <div>{new Date(n.dateCommencement!).toLocaleDateString("fr-FR")}</div>
+                            {n.dateFin && (
                               <div className="text-muted-foreground">
-                                → {new Date(n.date_fin).toLocaleDateString("fr-FR")}
+                                → {new Date(n.dateFin).toLocaleDateString("fr-FR")}
                               </div>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-center">{n.lieu || "-"}</TableCell>
-                        <TableCell>{getStatusBadge(n.statut)}</TableCell>
-                        <TableCell className="hidden xl:table-cell">
+                        <TableCell>{n.lieu || "-"}</TableCell>
+                        <TableCell>{getStatusBadge(n.statut as "draft" | "published" | "archived")}</TableCell>
+                        <TableCell>
                           <Badge variant="outline">{n.medias.length}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -825,7 +944,7 @@ export function NewsManagement() {
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Annuler</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => handleDelete(n.id)}
+                                    onClick={() => handleDelete(n.idActualite!)}
                                     className="bg-destructive hover:bg-destructive/90"
                                   >
                                     Supprimer
@@ -885,8 +1004,8 @@ export function NewsManagement() {
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} />
-                        {category.nom}
+                        {/* <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.couleur }} /> */}
+                        {category.name}
                       </div>
                     </SelectItem>
                   ))}
@@ -919,8 +1038,10 @@ export function NewsManagement() {
                 <Input
                   id="edit-date-debut"
                   type="datetime-local"
-                  value={formData.date_commencement}
-                  onChange={(e) => setFormData({ ...formData, date_commencement: e.target.value })}
+                 value={formData.dateCommencement?.toISOString().slice(0,16) ?? ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateCommencement: new Date(e.target.value) })
+                }
                 />
               </div>
               <div className="grid gap-2">
@@ -928,8 +1049,8 @@ export function NewsManagement() {
                 <Input
                   id="edit-date-fin"
                   type="datetime-local"
-                  value={formData.date_fin}
-                  onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
+                  value={formData.dateFin?.toISOString().slice(0,16) ?? ""}
+                  onChange={(e) => setFormData({ ...formData, dateFin: new Date(e.target.value)})}
                 />
               </div>
             </div>
@@ -945,17 +1066,29 @@ export function NewsManagement() {
             <div className="grid gap-2">
               <Label>Médias</Label>
               <div className="space-y-2">
-                <Button type="button" variant="outline" onClick={handleAddMedia} className="w-full bg-transparent">
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Ajouter un média
-                </Button>
+                <Label>
+                  <Button type="button" variant="outline" className="w-full bg-transparent">
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Ajouter un média
+                  </Button>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleAddMedia(e.target.files[0])
+                      }
+                    }}
+                  />
+                </Label>
+
                 {formData.medias.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
                     {formData.medias.map((media) => (
-                      <div key={media.id} className="relative border rounded-lg p-2">
+                      <div key={media.idMedia} className="relative border rounded-lg p-2">
                         <img
-                          src={media.url || "/placeholder.svg"}
-                          alt={media.name}
+                          src={media.chemin || "/placeholder.svg"}
+                          alt={media.media}
                           className="w-full h-20 object-cover rounded"
                         />
                         <Button
@@ -963,11 +1096,11 @@ export function NewsManagement() {
                           variant="destructive"
                           size="sm"
                           className="absolute top-1 right-1 h-6 w-6 p-0"
-                          onClick={() => handleRemoveMedia(media.id)}
+                          onClick={() => handleRemoveMedia(media.idMedia!)}
                         >
                           <X className="h-3 w-3" />
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-1 truncate">{media.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{media.chemin}</p>
                       </div>
                     ))}
                   </div>
