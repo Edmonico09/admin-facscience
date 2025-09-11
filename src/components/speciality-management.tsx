@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -31,138 +30,87 @@ import {
 import { Plus, Search, Edit, Trash2, Layers } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-// Type de données
-interface Specialite {
-  id: number
-  nom: string
-  description: string
-  parcours: string
-  mention: string
-  statut: "active" | "inactive"
-}
-
-// Mock data
-const mockSpecialites: Specialite[] = [
-  {
-    id: 1,
-    nom: "Machine Learning",
-    description: "Spécialité axée sur l’apprentissage automatique et l’IA",
-    parcours: "Informatique",
-    mention: "Sciences et Technologies",
-    statut: "active",
-  },
-  {
-    id: 2,
-    nom: "Analyse Numérique",
-    description: "Spécialité en mathématiques appliquées et calcul scientifique",
-    parcours: "Mathématiques",
-    mention: "Sciences Fondamentales",
-    statut: "active",
-  },
-  {
-    id: 3,
-    nom: "Biotechnologies",
-    description: "Spécialité dans les sciences du vivant et la bio-ingénierie",
-    parcours: "Biologie",
-    mention: "Sciences de la Vie",
-    statut: "inactive",
-  },
-]
+import { useSpeciality } from "@/hooks/useSpeciality"
+import { Speciality } from "@/services/types/speciality"
 
 export function SpecialityManagement() {
-  const [specialites, setSpecialites] = useState<Specialite[]>(mockSpecialites)
+  const { specialities, 
+          createSpeciality, 
+          updateSpeciality, 
+          removeSpeciality
+        } = useSpeciality();
+        
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editingSpecialite, setEditingSpecialite] = useState<Specialite | null>(null)
+  const [editingSpeciality, setEditingSpeciality] = useState<Speciality | null>(null)
+
   const [formData, setFormData] = useState({
-    nom: "",
+    name_speciality: "",
     description: "",
-    parcours: "",
-    mention: "",
-    statut: "active" as "active" | "inactive",
+    parcours: ""
   })
   const { toast } = useToast()
 
-
-  const getStatusBadge = (statut: "active" | "inactive") => {
-    return (
-      <Badge variant={statut === "active" ? "default" : "secondary"}>
-        {statut === "active" ? "Active" : "Inactive"}
-      </Badge>
-    )
-  }
-  // Filtrage
-  const filteredSpecialites = specialites.filter(
+  const filteredSpecialities = specialities.filter(
     (s) =>
-      s.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.name_speciality.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.parcours.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.mention.toLowerCase().includes(searchTerm.toLowerCase()),
+      s.description?.toLowerCase().includes(searchTerm.toLowerCase()) ,
   )
 
-  // Reset form
   const resetForm = () =>
     setFormData({
-      nom: "",
+      name_speciality: "",
       description: "",
-      parcours: "",
-      mention: "",
-      statut: "active",
+      parcours: "",      
     })
 
-  // Ajouter
-  const handleAdd = () => {
-    if (!formData.nom || !formData.parcours || !formData.mention) {
+  const handleAdd = async () => {
+    if (!formData.name_speciality || !formData.parcours || !formData.description) {
       toast({ title: "Erreur", description: "Champs obligatoires manquants", variant: "destructive" })
       return
     }
 
-    const newSpecialite: Specialite = {
-      id: Math.max(...specialites.map((s) => s.id)) + 1,
+    const newSpeciality: Speciality = {
+      id_speciality: Math.max(...specialities.map((s) => s.id_speciality)) + 1,
       ...formData,
     }
 
-    setSpecialites([...specialites, newSpecialite])
+    await createSpeciality(newSpeciality)
     setIsAddDialogOpen(false)
     resetForm()
     toast({ title: "Succès", description: "Spécialité ajoutée avec succès" })
   }
 
   // Modifier
-  const handleEdit = (specialite: Specialite) => {
-    setEditingSpecialite(specialite)
+  const handleEdit = (speciality: Speciality) => {
+    setEditingSpeciality(speciality)
     setFormData({
-      nom: specialite.nom,
-      description: specialite.description,
-      parcours: specialite.parcours,
-      mention: specialite.mention,
-      statut: specialite.statut,
+      name_speciality: speciality.name_speciality,
+      description: speciality.description,
+      parcours: speciality.parcours
     })
     setIsEditDialogOpen(true)
   }
 
   // Mettre à jour
-  const handleUpdate = () => {
-    if (!formData.nom || !formData.parcours || !formData.mention || !editingSpecialite) {
+  const handleUpdate = async () => {
+    if (!formData.name_speciality || !formData.parcours  || !editingSpeciality) {
       toast({ title: "Erreur", description: "Champs obligatoires manquants", variant: "destructive" })
       return
     }
 
-    setSpecialites((prev) =>
-      prev.map((s) =>
-        s.id === editingSpecialite.id ? { ...editingSpecialite, ...formData } : s,
-      ),
-    )
-
+    await updateSpeciality(editingSpeciality.id_speciality || 0, formData)
     setIsEditDialogOpen(false)
-    setEditingSpecialite(null)
+    setEditingSpeciality(null)
     resetForm()
     toast({ title: "Succès", description: "Spécialité mise à jour avec succès" })
   }
 
   // Supprimer
-  const handleDelete = (id: number) => {
-    setSpecialites(specialites.filter((s) => s.id !== id))
+  const handleDelete = async (id: number) => {
+    await removeSpeciality(id)
     toast({ title: "Succès", description: "Spécialité supprimée avec succès" })
   }
 
@@ -199,8 +147,8 @@ export function SpecialityManagement() {
                 <div className="grid gap-4 py-4">
                   <Label>Nom *</Label>
                   <Input
-                    value={formData.nom}
-                    onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                    value={formData.name_speciality}
+                    onChange={(e) => setFormData({ ...formData, name_speciality: e.target.value })}
                   />
                   <Label>Description</Label>
                   <Textarea
@@ -211,11 +159,6 @@ export function SpecialityManagement() {
                   <Input
                     value={formData.parcours}
                     onChange={(e) => setFormData({ ...formData, parcours: e.target.value })}
-                  />
-                  <Label>Mention *</Label>
-                  <Input
-                    value={formData.mention}
-                    onChange={(e) => setFormData({ ...formData, mention: e.target.value })}
                   />
                 </div>
                 <DialogFooter>
@@ -247,24 +190,16 @@ export function SpecialityManagement() {
                 <TableRow>
                   <TableHead>Nom</TableHead>
                   <TableHead>Parcours</TableHead>
-                  <TableHead>Mention</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSpecialites.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell>{s.nom}</TableCell>
+                {filteredSpecialities.map((s) => (
+                  <TableRow key={s.id_speciality}>
+                    <TableCell>{s.name_speciality}</TableCell>
                     <TableCell>{s.parcours}</TableCell>
-                    <TableCell>{s.mention}</TableCell>
                     <TableCell className="truncate max-w-xs">{s.description}</TableCell>
-                    <TableCell>
-                      <Badge variant={s.statut === "active" ? "default" : "secondary"}>
-                        {getStatusBadge(s.statut)}
-                      </Badge>
-                    </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" onClick={() => handleEdit(s)}>
                         <Edit className="h-4 w-4" />
@@ -279,13 +214,13 @@ export function SpecialityManagement() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Supprimer {s.nom} ?
+                              Supprimer {s.name_speciality} ?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Annuler</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleDelete(s.id)}
+                              onClick={() => handleDelete(s.id_speciality)}
                               className="bg-destructive hover:bg-destructive/90"
                             >
                               Supprimer
@@ -302,24 +237,16 @@ export function SpecialityManagement() {
 
           {/* Mobile cards */}
           <div className="md:hidden space-y-4">
-            {filteredSpecialites.map((s) => (
-              <div key={s.id} className="border rounded-lg p-4 shadow-sm">
+            {filteredSpecialities.map((s) => (
+              <div key={s.id_speciality} className="border rounded-lg p-4 shadow-sm">
                 <div className="flex justify-between">
-                  <span className="font-bold">{s.nom}</span>
-                  <Badge variant={s.statut === "active" ? "default" : "secondary"}>
-                    {s.statut}
-                  </Badge>
+                  <span className="font-bold">{s.name_speciality}</span>
                 </div>
                 <div className="flex px-2 my-1 text-sm text-muted-foreground">{s.description}</div>
                 <div className="flex px-2 my-1 text-sm">Parcours: {s.parcours}</div>
-                <div className="flex px-2 my-1 text-sm">Mention: {s.mention}</div>
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground text-end">{s.description}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Mention:</span>
-                    <span className="text-sm font-medium text-end overflow-auto">{s.mention}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Parcours:</span>
@@ -334,7 +261,7 @@ export function SpecialityManagement() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleDelete(s.id)}
+                    onClick={() => handleDelete(s.id_speciality)}
                     className="text-red-500"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -356,8 +283,8 @@ export function SpecialityManagement() {
           <div className="grid gap-4 py-4">
             <Label>Nom *</Label>
             <Input
-              value={formData.nom}
-              onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+              value={formData.name_speciality}
+              onChange={(e) => setFormData({ ...formData, name_speciality: e.target.value })}
             />
             <Label>Description</Label>
             <Textarea
@@ -368,11 +295,6 @@ export function SpecialityManagement() {
             <Input
               value={formData.parcours}
               onChange={(e) => setFormData({ ...formData, parcours: e.target.value })}
-            />
-            <Label>Mention *</Label>
-            <Input
-              value={formData.mention}
-              onChange={(e) => setFormData({ ...formData, mention: e.target.value })}
             />
           </div>
           <DialogFooter>

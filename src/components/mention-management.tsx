@@ -130,7 +130,7 @@ export function MentionManagement() {
           <h1 className="text-3xl font-bold text-foreground mb-2">Gestion des Mentions</h1>
           <p className="text-muted-foreground">Gérer les mentions académiques de l'université</p>
         </div>
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{mentions.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
@@ -148,12 +148,12 @@ export function MentionManagement() {
 
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
+                <Button className="flex justify-between rounded-full w-10 h-10 lg:w-fit lg:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
                   <Plus className="h-4 w-4" />
-                  <div className="hidden md:block">Ajouter une Mention</div>
+                  <div className="hidden lg:block">Ajouter une Mention</div>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="lg:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Ajouter une Nouvelle Mention</DialogTitle>
                   <DialogDescription>
@@ -215,7 +215,7 @@ export function MentionManagement() {
           </div>
 
           {/* Version Desktop - Table */}
-          <div className="hidden md:block rounded-md border">
+          <div className="hidden lg:block rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -275,7 +275,7 @@ export function MentionManagement() {
           </div>
 
           {/* Version Mobile - Cards */}
-          <div className="md:hidden space-y-4">
+          <div className="lg:hidden space-y-4">
             {filteredMentions.map((mention) => (
               <div key={mention.id_mention} className="bg-card border rounded-lg p-4 shadow-sm">
                 {/* Header de la carte avec abbreviation et statut */}
@@ -342,11 +342,11 @@ export function MentionManagement() {
                           irréversible.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-                      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                        <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+                      <AlertDialogFooter className="flex-col lg:flex-row gap-2">
+                        <AlertDialogCancel className="w-full lg:w-auto">Annuler</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDelete(mention.id_mention||0)}
-                          className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
+                          className="bg-destructive hover:bg-destructive/90 w-full lg:w-auto"
                         >
                           Supprimer
                         </AlertDialogAction>
@@ -371,7 +371,7 @@ export function MentionManagement() {
       </Card>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="lg:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Modifier la Mention</DialogTitle>
             <DialogDescription>Modifiez les informations de la mention sélectionnée.</DialogDescription>

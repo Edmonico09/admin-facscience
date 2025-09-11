@@ -1,12 +1,20 @@
-export interface Actualite {
-  id_actualite?: number;          
+import { Media } from "./media";
+
+export interface Actuality {
+  id_actuality?: number;          
   titre: string;                 
-  id_categorie: string;          
+  categorie: string;          
   description?: string;          
   contenu?: string;              
   date_creation?: Date;          
-  date_mise_a_jour?: Date;       
+  date_update?: Date;       
   date_commencement?: Date;      
   date_fin?: Date;               
-  lieu?: string;                 
+  lieu?: string;    
+  statut:string;
+  medias?: Media[]             
 }
+
+
+
+

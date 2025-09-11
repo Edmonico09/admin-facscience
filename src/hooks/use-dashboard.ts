@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { StatDb, StatItem } from "@/services/types/stat"
-import { Actualite } from "@/services/types/event"
+import { Actuality } from "@/services/types/event"
 import { statistic } from "@/services/api/stat.api"
 import { BookOpen, FlaskConical, GraduationCap, Newspaper, TrendingUp, Users } from "lucide-react"
 import { getClosestEvent } from "@/services/api/event.api"
@@ -19,7 +19,7 @@ export const statConfig: Record<string, { icon: any; color: string }> = {
 export function useDashboard() {
   const [stats, setStats] = useState<StatItem[]>([])
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([])
-  const [upcomingEvents, setUpcomingEvents] = useState<Actualite[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<Actuality[]>([])
   const { getRecentActivity, activities } = useActivity()
 
   useEffect(() => {

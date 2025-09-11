@@ -1,11 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { 
+  // useEffect, 
+  useState 
+} from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
@@ -27,118 +30,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Plus, Search, Edit, Trash2, FlaskConical, X } from "lucide-react"
+import { Plus, Search, Edit, Trash2, FlaskConical, X, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { 
+  addDescription, 
+  deleteDescription, 
+} from "@/services/api/labo.api"
 
-interface Mention {
-  id: number
-  nom: string
-  code: string
-}
-
-interface Person {
-  id: number
-  nom: string
-  prenom: string
-  email: string
-}
-
-interface DescriptionItem {
-  id: string
-  cle: string
-  valeur: string
-}
-
-interface Laboratory {
-  id: number
-  nom_labo: string
-  mention_rattachement: number
-  responsable: number
-  description: DescriptionItem[]
-  dateCreation: string
-  nombreChercheurs: number
-  statut: "active" | "inactive"
-}
-
-const mockMentions: Mention[] = [
-  { id: 1, nom: "Informatique", code: "INFO" },
-  { id: 2, nom: "Mathématiques", code: "MATH" },
-  { id: 3, nom: "Physique", code: "PHYS" },
-  { id: 4, nom: "Chimie", code: "CHIM" },
-]
-
-const mockPersons: Person[] = [
-  { id: 1, nom: "Benali", prenom: "Ahmed", email: "ahmed.benali@univ.ma" },
-  { id: 2, nom: "Zahra", prenom: "Fatima", email: "fatima.zahra@univ.ma" },
-  { id: 3, nom: "Alami", prenom: "Mohamed", email: "mohamed.alami@univ.ma" },
-  { id: 4, nom: "Bennani", prenom: "Aicha", email: "aicha.bennani@univ.ma" },
-  { id: 5, nom: "Idrissi", prenom: "Omar", email: "omar.idrissi@univ.ma" },
-]
-
-const mockLaboratories: Laboratory[] = [
-  {
-    id: 1,
-    nom_labo: "Laboratoire de Recherche en Intelligence Artificielle",
-    mention_rattachement: 1,
-    responsable: 1,
-    description: [
-      { id: "1", cle: "Mission", valeur: "Développer des solutions IA innovantes pour l'industrie et la recherche" },
-      { id: "2", cle: "Domaines", valeur: "Machine Learning, Deep Learning, Computer Vision, NLP" },
-      { id: "3", cle: "Équipements", valeur: "Serveurs GPU, Clusters de calcul, Laboratoire de vision" },
-    ],
-    dateCreation: "2020-09-01",
-    nombreChercheurs: 15,
-    statut: "active",
-  },
-  {
-    id: 2,
-    nom_labo: "Laboratoire de Mathématiques Appliquées",
-    mention_rattachement: 2,
-    responsable: 2,
-    description: [
-      { id: "4", cle: "Objectif", valeur: "Recherche en mathématiques appliquées aux sciences et à l'ingénierie" },
-      { id: "5", cle: "Spécialités", valeur: "Analyse numérique, Optimisation, Statistiques" },
-    ],
-    dateCreation: "2019-09-01",
-    nombreChercheurs: 12,
-    statut: "active",
-  },
-  {
-    id: 3,
-    nom_labo: "Laboratoire de Physique des Matériaux",
-    mention_rattachement: 3,
-    responsable: 3,
-    description: [
-      { id: "6", cle: "Focus", valeur: "Étude des propriétés physiques des matériaux avancés" },
-      { id: "7", cle: "Techniques", valeur: "Spectroscopie, Diffraction X, Microscopie électronique" },
-      { id: "8", cle: "Applications", valeur: "Nanotechnologies, Énergies renouvelables, Électronique" },
-    ],
-    dateCreation: "2018-09-01",
-    nombreChercheurs: 18,
-    statut: "active",
-  },
-  {
-    id: 4,
-    nom_labo: "Laboratoire de Chimie Organique",
-    mention_rattachement: 4,
-    responsable: 4,
-    description: [
-      { id: "9", cle: "Recherche", valeur: "Synthèse et caractérisation de composés organiques" },
-      { id: "10", cle: "Secteurs", valeur: "Pharmaceutique, Cosmétique, Agroalimentaire" },
-    ],
-    dateCreation: "2021-09-01",
-    nombreChercheurs: 8,
-    statut: "inactive",
-  },
-]
+import { DescriptionItem, Laboratory } from "@/services/types/labo"
+import { useLabo } from "@/hooks/useLabo"
+import { useMention } from "@/hooks/useMention"
+import { usePerson } from "@/hooks/usePerson"
 
 export function LabManagement() {
-  const [laboratories, setLaboratories] = useState<Laboratory[]>(mockLaboratories)
-  const [mentions] = useState<Mention[]>(mockMentions)
-  const [persons] = useState<Person[]>(mockPersons)
+  const {laboratories, createLabo, updateLaboratory, removeLabo} = useLabo();
+  const {mentions} = useMention();
+  const {persons} = usePerson();
+
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedMention, setSelectedMention] = useState<string>("all")
-  const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingLab, setEditingLab] = useState<Laboratory | null>(null)
@@ -147,28 +57,29 @@ export function LabManagement() {
     mention_rattachement: "",
     responsable: "",
     description: [
-      { id: "temp1", cle: "", valeur: "" },
-      { id: "temp2", cle: "", valeur: "" },
+      {cle: "", valeur: "" },
+      {cle: "", valeur: "" },
     ] as DescriptionItem[],
   })
   const { toast } = useToast()
 
-  const filteredLaboratories = laboratories.filter((lab) => {
-    const matchesSearch =
-      lab.nom_labo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentions
-        .find((m) => m.id === lab.mention_rattachement)
-        ?.nom.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      persons
-        .find((p) => p.id === lab.responsable)
-        ?.nom.toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    const matchesMention = selectedMention === "all" || lab.mention_rattachement.toString() === selectedMention
-    const matchesStatus = selectedStatus === "all" || lab.statut === selectedStatus
+const filteredLaboratories = laboratories.filter((lab) => {
+  const matchesSearch =
+    lab.nom_labo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    mentions
+      .find((m) => m.toString() === lab.mention_rattachement)
+      ?.nom_mention.toLowerCase()
+      .includes(searchTerm.toLowerCase()) ||
+    persons
+      .find((p) => p.toString() === lab.responsable)
+      ?.nom.toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesMention && matchesStatus
-  })
+  const matchesMention = selectedMention === "all" || lab.mention_rattachement === selectedMention;
+
+  return matchesSearch && matchesMention;
+});
+
 
   const resetForm = () => {
     setFormData({
@@ -176,81 +87,119 @@ export function LabManagement() {
       mention_rattachement: "",
       responsable: "",
       description: [
-        { id: "temp1", cle: "", valeur: "" },
-        { id: "temp2", cle: "", valeur: "" },
+        {  cle: "", valeur: "" },
+        {  cle: "", valeur: "" },
       ],
     })
   }
 
   const addDescriptionField = () => {
     const newField: DescriptionItem = {
-      id: `temp${Date.now()}`,
       cle: "",
       valeur: "",
-    }
+    };
     setFormData({
       ...formData,
       description: [...formData.description, newField],
-    })
-  }
+    });
+  };
 
-  const removeDescriptionField = (id: string) => {
-    if (formData.description.length <= 2) {
+
+const removeDescriptionField = async (index: number, cle: string) => {
+  if (formData.description.length <= 2) {
+    toast({
+      title: "Attention",
+      description: "Au moins 2 champs de description sont requis",
+      variant: "destructive",
+    })
+    return
+  }
+  
+  if (editingLab?.id_labo) {
+    try {
+      await deleteDescription(editingLab.id_labo, cle);
+      setFormData({
+        ...formData,
+        description: formData.description.filter((_, i) => i !== index),
+      })
+    } catch(err) {
       toast({
-        title: "Attention",
-        description: "Au moins 2 champs de description sont requis",
+        title: "Erreur",
+        description: (err as Error).message,
         variant: "destructive",
       })
-      return
     }
+  } else {
+    // Mode ajout - suppression locale uniquement
     setFormData({
       ...formData,
-      description: formData.description.filter((item) => item.id !== id),
+      description: formData.description.filter((_, i) => i !== index),
     })
   }
+}
 
-  const updateDescriptionField = (id: string, field: "cle" | "valeur", value: string) => {
-    setFormData({
-      ...formData,
-      description: formData.description.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-    })
+const addDescriptionFieldInEditMode = async () => {
+  if (editingLab?.id_labo) {
+    // Mode édition - appel API + mise à jour locale
+    const newField: DescriptionItem = { cle: "", valeur: "" };
+    try {
+      await addDescription(editingLab.id_labo, newField);
+      setFormData({
+        ...formData,
+        description: [...formData.description, newField],
+      });
+      toast({ title: "Succès", description: "Description ajoutée" });
+    } catch (err) {
+      toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
+    }
+  } else {
+    addDescriptionField();
   }
+};
 
-  const handleAdd = () => {
+const handleAdd = async () => {
+  try {
     if (!formData.nom_labo || !formData.mention_rattachement || !formData.responsable) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    // Filter out empty description fields
-    const validDescriptions = formData.description.filter((item) => item.cle.trim() && item.valeur.trim())
-
+    // Filtrer les champs description vides
+    const validDescriptions = formData.description.filter(
+      (item) => item.cle.trim() && item.valeur.trim()
+    );
+  
     const newLab: Laboratory = {
-      id: Math.max(...laboratories.map((l) => l.id)) + 1,
+      id_labo: laboratories.length === 0 ? laboratories.length + 1 : 0,
       nom_labo: formData.nom_labo,
-      mention_rattachement: Number.parseInt(formData.mention_rattachement),
-      responsable: Number.parseInt(formData.responsable),
+      mention_rattachement: formData.mention_rattachement,
+      responsable: formData.responsable,
       description: validDescriptions.map((item) => ({
         ...item,
-        id: `desc${Date.now()}_${Math.random()}`,
       })),
-      dateCreation: new Date().toISOString().split("T")[0],
-      nombreChercheurs: 0,
-      statut: "active",
-    }
+    };
 
-    setLaboratories([...laboratories, newLab])
-    setIsAddDialogOpen(false)
-    resetForm()
+    await createLabo(newLab);
+    setIsAddDialogOpen(false);
+    resetForm();
+
     toast({
       title: "Succès",
       description: "Laboratoire ajouté avec succès",
-    })
+    });
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du laboratoire:", error);
+    toast({
+      title: "Erreur",
+      description: "Impossible d'ajouter le laboratoire. Veuillez réessayer.",
+      variant: "destructive",
+    });
   }
+};
 
   const handleEdit = (lab: Laboratory) => {
     setEditingLab(lab)
@@ -262,71 +211,81 @@ export function LabManagement() {
         lab.description.length > 0
           ? [...lab.description]
           : [
-              { id: "temp1", cle: "", valeur: "" },
-              { id: "temp2", cle: "", valeur: "" },
+              { cle: "", valeur: "" },
+              { cle: "", valeur: "" },
             ],
     })
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!formData.nom_labo || !formData.mention_rattachement || !formData.responsable || !editingLab) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      })
-      return
-    }
+ const handleUpdate = async () => {
+  if (!formData.nom_labo || !formData.mention_rattachement || !formData.responsable || !editingLab) {
+    toast({
+      title: "Erreur",
+      description: "Veuillez remplir tous les champs obligatoires",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    // Filter out empty description fields
-    const validDescriptions = formData.description.filter((item) => item.cle.trim() && item.valeur.trim())
+  // Filter out empty description fields
+  const validDescriptions = formData.description.filter(
+    (item) => item.cle.trim() && item.valeur.trim()
+  );
 
-    const updatedLabs = laboratories.map((lab) =>
-      lab.id === editingLab.id
-        ? {
-            ...lab,
-            nom_labo: formData.nom_labo,
-            mention_rattachement: Number.parseInt(formData.mention_rattachement),
-            responsable: Number.parseInt(formData.responsable),
-            description: validDescriptions,
-          }
-        : lab,
-    )
+  const updatedLabData: Laboratory = {
+    ...editingLab,
+    nom_labo: formData.nom_labo,
+    mention_rattachement: formData.mention_rattachement,
+    responsable: formData.responsable,
+    description: validDescriptions,
+  };
 
-    setLaboratories(updatedLabs)
-    setIsEditDialogOpen(false)
-    setEditingLab(null)
-    resetForm()
+  try {
+    await updateLaboratory(editingLab.id_labo!, updatedLabData);
+
+    // // Met à jour le tableau local
+    // setLaboratories(
+    //   laboratories.map((lab) =>
+    //     lab.id_labo === updatedLab.id_labo ? updatedLab : lab
+    //   )
+    // );
+
+    setIsEditDialogOpen(false);
+    setEditingLab(null);
+    resetForm();
+
     toast({
       title: "Succès",
       description: "Laboratoire mis à jour avec succès",
-    })
+    });
+  } catch (error: any) {
+    toast({
+      title: "Erreur",
+      description: error.message || "Impossible de mettre à jour le laboratoire",
+      variant: "destructive",
+    });
   }
+};
 
-  const handleDelete = (id: number) => {
-    setLaboratories(laboratories.filter((lab) => lab.id !== id))
+  const handleDelete = async (id_labo: number) => {
+  try {
+    await removeLabo(id_labo);
+
+    // setLaboratories(laboratories.filter((lab) => lab.id_labo !== id_labo));
+
     toast({
       title: "Succès",
       description: "Laboratoire supprimé avec succès",
-    })
+    });
+  } catch (error: any) {
+    toast({
+      title: "Erreur",
+      description: error.message || "Impossible de supprimer le laboratoire",
+      variant: "destructive",
+    });
   }
-
-  const getStatusBadge = (statut: "active" | "inactive") => {
-    return (
-      <Badge variant={statut === "active" ? "default" : "secondary"}>{statut === "active" ? "Actif" : "Inactif"}</Badge>
-    )
-  }
-
-  const getMentionName = (mentionId: number) => {
-    const mention = mentions.find((m) => m.id === mentionId)
-    return mention ? `${mention.nom} (${mention.code})` : "Inconnue"
-  }
-
-  const getPersonName = (personId: number) => {
-    const person = persons.find((p) => p.id === personId)
-    return person ? `${person.prenom} ${person.nom}` : "Inconnu"
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -339,12 +298,6 @@ export function LabManagement() {
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{laboratories.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {laboratories.filter((l) => l.statut === "active").length}
-            </div>
-            <div className="text-xs text-muted-foreground">Actifs</div>
           </div>
         </div>
       </div>
@@ -392,8 +345,8 @@ export function LabManagement() {
                         </SelectTrigger>
                         <SelectContent>
                           {mentions.map((mention) => (
-                            <SelectItem key={mention.id} value={mention.id.toString()}>
-                              {mention.nom} ({mention.code})
+                            <SelectItem key={mention.id_mention} value={mention.id_mention!.toString()}>
+                              {mention.nom_mention} ({mention.abbreviation})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -419,42 +372,46 @@ export function LabManagement() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Description (Clé-Valeur)</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={addDescriptionField}>
-                        <Plus className="h-4 w-4 mr-1" />
-                        Ajouter
-                      </Button>
-                    </div>
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {formData.description.map((item) => (
-                        <div key={item.id} className="flex gap-2 items-start">
-                          <div className="flex-1 grid grid-cols-2 gap-2">
-                            <Input
-                              placeholder="Clé (ex: Mission)"
-                              value={item.cle}
-                              onChange={(e) => updateDescriptionField(item.id, "cle", e.target.value)}
-                            />
-                            <Input
-                              placeholder="Valeur (ex: Recherche en IA)"
-                              value={item.valeur}
-                              onChange={(e) => updateDescriptionField(item.id, "valeur", e.target.value)}
-                            />
-                          </div>
-                          {formData.description.length > 2 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeDescriptionField(item.id)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between">
+                <Label>Description (Clé-Valeur)</Label>
+               <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addDescriptionFieldInEditMode}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ajouter
+                  </Button>
+
+              </div>
+          {formData.description.map((item, index) => (
+            <div key={index} className="flex gap-2">
+              <Input
+                placeholder="Clé"
+                value={item.cle}
+                onChange={(e) => {
+                  const updated = [...formData.description];
+                  updated[index] = { ...updated[index], cle: e.target.value };
+                  setFormData({ ...formData, description: updated });
+                }}
+              />
+              <Input
+                placeholder="Valeur"
+                value={item.valeur}
+                onChange={(e) => {
+                  const updated = [...formData.description];
+                  updated[index] = { ...updated[index], valeur: e.target.value };
+                  setFormData({ ...formData, description: updated });
+                }}
+              />
+              <Button onClick={() => removeDescriptionField(index , item.cle )}>
+                Supprimer
+              </Button>
+            </div>
+          ))}
+            </div>
+
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -480,125 +437,105 @@ export function LabManagement() {
                 className="pl-10"
               />
             </div>
-
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Select value={selectedMention} onValueChange={setSelectedMention}>
-                <SelectTrigger className="w-[100%]">
-                  <SelectValue placeholder="Toutes mentions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes mentions</SelectItem>
-                  {mentions.map((mention) => (
-                    <SelectItem key={mention.id} value={mention.id.toString()}>
-                      {mention.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-[100%]">
-                  <SelectValue placeholder="Tous statuts" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous statuts</SelectItem>
-                  <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="inactive">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedMention} onValueChange={setSelectedMention}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Toutes mentions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes mentions</SelectItem>
+                {mentions.map((mention) => (
+                  <SelectItem key={mention.id_mention} value={mention.id_mention!.toString()}>
+                    {mention.nom_mention}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-4">
             {filteredLaboratories.length === 0 ? (
               <div className="text-center py-8">
                 <FlaskConical className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
+                {/* <p className="text-muted-foreground">
                   {searchTerm || selectedMention !== "all" || selectedStatus !== "all"
                     ? "Aucun laboratoire trouvé pour les filtres sélectionnés"
                     : "Aucun laboratoire disponible"}
-                </p>
+                </p> */}
               </div>
             ) : (
-                <div className="space-y-4">
-                    {filteredLaboratories.map((lab) => (
-                        <div key={lab.id} className="bg-card border rounded-lg p-4 shadow-sm">
-                            {/* Header de la carte avec code et statut */}
-                            <div className="flex justify-between items-start mb-3">
-                            <div className="flex items-center gap-2">
-                                <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
-                                {getMentionName(lab.mention_rattachement)}
-                                </span>
-                                {getStatusBadge(lab.statut)}
+              <div className="grid gap-4">
+                {filteredLaboratories.map((lab) => (
+                  <Card key={lab.id_labo} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg text-university-primary mb-2">{lab.nom_labo}</CardTitle>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <FlaskConical className="h-4 w-4" />
+                              <span>{(lab.mention_rattachement)}</span>
                             </div>
+                            <div className="flex items-center gap-1">
+                              <User className="h-4 w-4" />
+                              <span>{(lab.responsable)}</span>
                             </div>
-                            
-                            {/* Nom et description */}
-                            <div className="mb-4">
-                            <h3 className="font-semibold text-base mb-1">{lab.nom_labo}</h3>
-                            {lab.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                {lab.description.map((desc) => desc.valeur).join(", ")}
-                                </p>
-                            )}
+                            {/* <Badge variant="outline">{lab.nombreChercheurs} chercheurs</Badge>
+                            {getStatusBadge(lab.statut)} */}
+                          </div>
                         </div>
-
-                        {/* Informations principales */}
-                        <div className="space-y-3 mb-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Responsable:</span>
-                                <span className="text-sm font-medium">{getPersonName(lab.responsable)}</span>
-                            </div>
-                        
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Recherches:</span>
-                                <Badge variant="outline" className="text-xs">{lab.nombreChercheurs}</Badge>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Date création:</span>
-                                <span className="text-sm">{new Date(lab.dateCreation).toLocaleDateString("fr-FR")}</span>
-                            </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(lab)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Êtes-vous sûr de vouloir supprimer le laboratoire "{lab.nom_labo}" ? Cette action est
+                                  irréversible.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(lab.id_labo!)}
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
-
-                        <div className="flex gap-2 pt-3 border-t">
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleEdit(lab)}
-                                className="flex-1"
-                            >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Modifier
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger className="text-red-500" asChild>
-                                    <Button variant="outline" size="sm" className="flex-1">
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Supprimer
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="w-[90vw] max-w-md">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Êtes-vous sûr de vouloir supprimer le laboratoire "{lab.nom_labo}" ? Cette action est
-                                            irréversible.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                                        <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
-                                        <AlertDialogAction
-                                        onClick={() => handleDelete(lab.id)}
-                                        className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
-                                        >
-                                        Supprimer
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {lab.description.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm text-foreground">Informations détaillées</h4>
+                          <div className="grid gap-2">
+                            {lab.description.map((desc) => (
+                              <div key={desc.cle} className="flex gap-3 text-sm">
+                                <span className="font-medium text-university-primary min-w-[100px]">{desc.cle}:</span>
+                                <span className="text-muted-foreground flex-1">{desc.valeur}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                    </div>
-                    ))}
-                </div>
+                      )}
+                      {/* <div className="flex items-center justify-between mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+                        <span>Créé le {new Date(lab.dateCreation).toLocaleDateString("fr-FR")}</span>
+                      </div> */}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </CardContent>
@@ -632,8 +569,8 @@ export function LabManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     {mentions.map((mention) => (
-                      <SelectItem key={mention.id} value={mention.id.toString()}>
-                        {mention.nom} ({mention.code})
+                      <SelectItem key={mention.id_mention} value={mention.id_mention!.toString()}>
+                        {mention.nom_mention} ({mention.abbreviation})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -661,28 +598,34 @@ export function LabManagement() {
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
                 <Label>Description (Clé-Valeur)</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addDescriptionField}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Ajouter
-                </Button>
+           <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addDescriptionField}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Ajouter
+            </Button>
+
               </div>
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                {formData.description.map((item) => (
-                  <div key={item.id} className="flex gap-2 items-start">
+                {formData.description.map((item, index) => (
+                  <div key={item.cle} className="flex gap-2 items-start">
                     <div className="flex-1 grid grid-cols-2 gap-2">
-                      <Input
+                      {/* <Input
                         placeholder="Clé (ex: Mission)"
                         value={item.cle}
-                        onChange={(e) => updateDescriptionField(item.id, "cle", e.target.value)}
+                        onChange={(e) => updateDescriptionField( "cle", e.target.value)}
                       />
                       <Input
                         placeholder="Valeur (ex: Recherche en IA)"
                         value={item.valeur}
-                        onChange={(e) => updateDescriptionField(item.id, "valeur", e.target.value)}
-                      />
+                        onChange={(e) => updateDescriptionField("valeur", e.target.value)}
+                      /> */}
                     </div>
                     {formData.description.length > 2 && (
-                      <Button type="button" variant="outline" size="sm" onClick={() => removeDescriptionField(item.id)}>
+                      <Button type="button" variant="outline" size="sm" onClick={() => removeDescriptionField(index , item.cle)}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}

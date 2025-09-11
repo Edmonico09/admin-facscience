@@ -1,12 +1,12 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+// import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import {
   TrendingUp,
   Calendar,
-  AlertCircle,
+  // AlertCircle,
 } from "lucide-react"
 import { useDashboard } from "@/hooks/use-dashboard"
 
@@ -113,7 +113,7 @@ export function Dashboard() {
                     <span>{event.date_fin?.toDateString()}</span>
                   </div>
                   <Badge variant="outline" className="mt-2 text-xs">
-                    {event.id_categorie}
+                    {event.categorie}
                   </Badge>
                 </div>
               ))}

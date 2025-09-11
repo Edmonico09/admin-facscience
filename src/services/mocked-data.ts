@@ -1,8 +1,9 @@
 import { BookOpen, FlaskConical, GraduationCap, Newspaper, TrendingUp, Users } from "lucide-react"
-import { Actualite } from "./types/event";
+import { Actuality } from "./types/event";
 import { StatItem } from "./types/stat";
 import { Mention } from "@/services/types/mention";
 import { FormationEnum, NiveauEnum, Parcours } from "@/services/types/parcours"
+import { Speciality } from "./types/speciality";
 
 export const stats : StatItem[] = [
 { title: "Mentions", value: "12", icon: GraduationCap, color: "text-university-primary", change: "+2" },
@@ -46,36 +47,42 @@ export const recentActivities = [
 },
 ]
 
-export const upcomingEvents: Actualite[] = [
+export const upcomingEvents: Actuality[] = [
   {
-    id_actualite: 1,
+    id_actuality: 1,
     titre: "Réunion du conseil pédagogique",
-    id_categorie: 'Reunion',
+    categorie: 'Reunion',
     description: "Réunion pour discuter des nouvelles orientations pédagogiques.",
     date_creation: new Date(),
     date_commencement: new Date("2025-01-15T14:00:00"),
     date_fin: new Date("2025-01-15T15:00:00"),
     lieu: "Salle A",
+    statut: "",
+    medias: []
   },
   {
-    id_actualite: 2,
+    id_actuality: 2,
     titre: "Soutenance de thèse - Informatique",
-    id_categorie: 'Soutenance',
+    categorie: 'Soutenance',
     description: "Soutenance de thèse pour le département d'informatique.",
     date_creation: new Date(),
     date_commencement: new Date("2025-01-18T10:00:00"),
     date_fin: new Date("2025-01-18T12:00:00"),
     lieu: "Amphi B",
+    statut: "",
+    medias: []
   },
   {
-    id_actualite: 3,
+    id_actuality: 3,
     titre: "Conférence internationale IA",
-    id_categorie: 'Conference',
+    categorie: 'Conference',
     description: "Conférence internationale sur l'intelligence artificielle.",
     date_creation: new Date(),
     date_commencement: new Date("2025-01-22T09:00:00"),
     date_fin: new Date("2025-01-22T17:00:00"),
     lieu: "Centre de conférence",
+    statut: "",
+    medias: []
   },
 ];
 
@@ -160,4 +167,117 @@ export const mockParcours: Parcours[] = [
 export const mockUsers = [
   { id: 1, identifiant: "alice", password: "password123", name: "Alice" },
   { id: 2, identifiant: "bob", password: "secret", name: "Bob" },
+];
+
+export const mockSpecialities: Speciality[] = [
+  {
+    id_speciality: 1,
+    name_speciality: "Informatique",
+    parcours: "Développement Web et Mobile",
+    description: "Formation axée sur les technologies front-end et back-end modernes."
+  },
+  {
+    id_speciality: 2,
+    name_speciality: "Biotechnologie",
+    parcours: "Génie biologique",
+    description: "Étude des processus biologiques appliqués à l'industrie et à la santé."
+  },
+  {
+    id_speciality: 3,
+    name_speciality: "Management",
+    parcours: "Gestion des organisations",
+    description: "Approche stratégique de la gestion d’entreprise et du leadership."
+  },
+  {
+    id_speciality: 4,
+    name_speciality: "Design graphique",
+    parcours: "Création visuelle",
+    description: ""
+  },
+  {
+    id_speciality: 5,
+    name_speciality: "Énergies renouvelables",
+    parcours: "Ingénierie environnementale",
+    description: "Focus sur les technologies durables et la transition énergétique."
+  }
+];
+
+export const mockActualities: Actuality[] = [
+  {
+    id_actuality: 1,
+    titre: "Conférence sur la Santé Digitale",
+    categorie: "Événement",
+    description: "Une conférence sur l'impact du digital dans le secteur médical.",
+    contenu: "Experts et professionnels discuteront des dernières avancées en e-santé.",
+    date_creation: new Date("2025-08-20T10:00:00"),
+    date_update: new Date("2025-08-25T14:30:00"),
+    date_commencement: new Date("2025-09-15T09:00:00"),
+    date_fin: new Date("2025-09-15T17:00:00"),
+    lieu: "Auditorium Clinique Centrale",
+    statut: "Publié",
+    medias: [
+      {
+        id: 101,
+        type: "image",
+        url: "https://picsum.photos/600/400?random=1"
+        // description: "Affiche de la conférence"
+      }
+    ]
+  },
+  {
+    id_actuality: 2,
+    titre: "Nouvelle Aile de Pédiatrie Ouverte",
+    categorie: "Annonce",
+    description: "Ouverture officielle d’une nouvelle aile pédiatrique moderne.",
+    contenu: "La clinique inaugure une aile équipée de 20 chambres supplémentaires.",
+    date_creation: new Date("2025-09-01T08:00:00"),
+    date_update: new Date("2025-09-05T12:00:00"),
+    date_commencement: new Date("2025-09-10T10:00:00"),
+    statut: "Publié",
+    lieu: "Clinique Médicale",
+    medias: [
+      {
+        id: 102,
+        type: "video",
+        url: "https://www.example.com/video.mp4",
+        // description: "Présentation de la nouvelle aile"
+      }
+    ]
+  },
+  {
+    id_actuality: 3,
+    titre: "Campagne de Vaccination Gratuite",
+    categorie: "Santé Publique",
+    description: "Vaccination gratuite pour enfants de moins de 5 ans.",
+    contenu: "La campagne durera 2 semaines et couvrira toutes les communes de la ville.",
+    date_creation: new Date("2025-09-05T09:00:00"),
+    date_update: new Date("2025-09-07T15:00:00"),
+    date_commencement: new Date("2025-09-20T08:00:00"),
+    date_fin: new Date("2025-10-04T16:00:00"),
+    lieu: "Centres de santé partenaires",
+    statut: "En attente",
+    medias: [
+      {
+        id: 103,
+        type: "image",
+        url: "https://picsum.photos/600/400?random=2"
+      },
+      {
+        id: 104,
+        type: "document",
+        url: "https://www.example.com/plan-campagne.pdf",
+        // description: "Détails de la campagne"
+      }
+    ]
+  },
+  {
+    id_actuality: 4,
+    titre: "Article: Nutrition et Prévention",
+    categorie: "Article",
+    description: "Les bases de la nutrition pour prévenir les maladies chroniques.",
+    contenu: "Une alimentation équilibrée peut réduire les risques cardiovasculaires...",
+    date_creation: new Date("2025-09-08T11:00:00"),
+    statut: "Brouillon",
+    medias: []
+  }
 ];
