@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -29,96 +28,40 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Plus, Search, Edit, Trash2, GraduationCap } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-
-interface Mention {
-  id: number
-  nom: string
-  description: string
-  code: string
-  responsable: string
-  dateCreation: string
-  nombreParcours: number
-  statut: "active" | "inactive"
-}
-
-const mockMentions: Mention[] = [
-  {
-    id: 1,
-    nom: "Informatique",
-    description: "Formation en sciences informatiques et technologies de l'information",
-    code: "INFO",
-    responsable: "Dr. Ahmed Benali",
-    dateCreation: "2020-09-01",
-    nombreParcours: 8,
-    statut: "active",
-  },
-  {
-    id: 2,
-    nom: "Mathématiques",
-    description: "Formation en mathématiques pures et appliquées",
-    code: "MATH",
-    responsable: "Prof. Fatima Zahra",
-    dateCreation: "2019-09-01",
-    nombreParcours: 5,
-    statut: "active",
-  },
-  {
-    id: 3,
-    nom: "Physique",
-    description: "Formation en physique théorique et expérimentale",
-    code: "PHYS",
-    responsable: "Dr. Mohamed Alami",
-    dateCreation: "2018-09-01",
-    nombreParcours: 6,
-    statut: "active",
-  },
-  {
-    id: 4,
-    nom: "Chimie",
-    description: "Formation en chimie générale et spécialisée",
-    code: "CHIM",
-    responsable: "Prof. Aicha Bennani",
-    dateCreation: "2021-09-01",
-    nombreParcours: 4,
-    statut: "inactive",
-  },
-]
+import { useToast } from "@/hooks/use-toast";
+import { Mention } from "@/services/types/mention"
+import { useMention } from "@/hooks/useMention"
 
 export function MentionManagement() {
-  const [mentions, setMentions] = useState<Mention[]>(mockMentions)
+  const {mentions, createMention, updateMention, removeMention} = useMention();
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingMention, setEditingMention] = useState<Mention | null>(null)
   const [formData, setFormData] = useState({
-    nom: "",
-    description: "",
-    code: "",
-    responsable: "",
-    statut: "active" as "active" | "inactive",
+    nom_mention: "",
+    description_mention: "",
+    abbreviation: "",
   })
   const { toast } = useToast()
 
   const filteredMentions = mentions.filter(
     (mention) =>
-      mention.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mention.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mention.responsable.toLowerCase().includes(searchTerm.toLowerCase()),
+      mention.nom_mention.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mention.abbreviation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mention.description_mention?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const resetForm = () => {
     setFormData({
-      nom: "",
-      description: "",
-      code: "",
-      responsable: "",
-      statut: "active",
+      nom_mention: "",
+      description_mention: "",
+      abbreviation: "",
     })
   }
 
-  const handleAdd = () => {
-    if (!formData.nom || !formData.code || !formData.responsable) {
+  const handleAdd = async () => {
+    if (!formData.nom_mention || !formData.abbreviation || !formData.description_mention) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -128,17 +71,12 @@ export function MentionManagement() {
     }
 
     const newMention: Mention = {
-      id: Math.max(...mentions.map((m) => m.id)) + 1,
-      nom: formData.nom,
-      description: formData.description,
-      code: formData.code.toUpperCase(),
-      responsable: formData.responsable,
-      dateCreation: new Date().toISOString().split("T")[0],
-      nombreParcours: 0,
-      statut: formData.statut,
+      nom_mention: formData.nom_mention,
+      description_mention: formData.description_mention,
+      abbreviation: formData.abbreviation.toUpperCase(),
     }
 
-    setMentions([...mentions, newMention])
+    await createMention(newMention)
     setIsAddDialogOpen(false)
     resetForm()
     toast({
@@ -150,17 +88,15 @@ export function MentionManagement() {
   const handleEdit = (mention: Mention) => {
     setEditingMention(mention)
     setFormData({
-      nom: mention.nom,
-      description: mention.description,
-      code: mention.code,
-      responsable: mention.responsable,
-      statut: mention.statut,
+      nom_mention: mention.nom_mention,
+      description_mention: mention.description_mention||"",
+      abbreviation: mention.abbreviation,
     })
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!formData.nom || !formData.code || !formData.responsable || !editingMention) {
+  const handleUpdate = async() => {
+    if (!formData.nom_mention || !formData.abbreviation || !formData.description_mention || !editingMention) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -169,20 +105,7 @@ export function MentionManagement() {
       return
     }
 
-    const updatedMentions = mentions.map((mention) =>
-      mention.id === editingMention.id
-        ? {
-            ...mention,
-            nom: formData.nom,
-            description: formData.description,
-            code: formData.code.toUpperCase(),
-            responsable: formData.responsable,
-            statut: formData.statut,
-          }
-        : mention,
-    )
-
-    setMentions(updatedMentions)
+    await updateMention(editingMention.id_mention||0, formData)
     setIsEditDialogOpen(false)
     setEditingMention(null)
     resetForm()
@@ -192,20 +115,12 @@ export function MentionManagement() {
     })
   }
 
-  const handleDelete = (id: number) => {
-    setMentions(mentions.filter((mention) => mention.id !== id))
+  const handleDelete = async (id: number) => {
+    await removeMention(id)
     toast({
       title: "Succès",
       description: "Mention supprimée avec succès",
     })
-  }
-
-  const getStatusBadge = (statut: "active" | "inactive") => {
-    return (
-      <Badge variant={statut === "active" ? "default" : "secondary"}>
-        {statut === "active" ? "Active" : "Inactive"}
-      </Badge>
-    )
   }
 
   return (
@@ -219,12 +134,6 @@ export function MentionManagement() {
           <div className="text-center">
             <div className="text-2xl font-bold text-university-primary">{mentions.length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {mentions.filter((m) => m.statut === "active").length}
-            </div>
-            <div className="text-xs text-muted-foreground">Actives</div>
           </div>
         </div>
       </div>
@@ -256,35 +165,26 @@ export function MentionManagement() {
                     <Label htmlFor="nom">Nom de la mention *</Label>
                     <Input
                       id="nom"
-                      value={formData.nom}
-                      onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                      value={formData.nom_mention}
+                      onChange={(e) => setFormData({ ...formData, nom_mention: e.target.value })}
                       placeholder="Ex: Informatique"
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="code">Code *</Label>
+                    <Label htmlFor="abbreviation">Abbreviation *</Label>
                     <Input
-                      id="code"
-                      value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                      id="abbreviation"
+                      value={formData.abbreviation}
+                      onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
                       placeholder="Ex: INFO"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="responsable">Responsable *</Label>
-                    <Input
-                      id="responsable"
-                      value={formData.responsable}
-                      onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
-                      placeholder="Ex: Dr. Ahmed Benali"
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      value={formData.description_mention}
+                      onChange={(e) => setFormData({ ...formData, description_mention: e.target.value })}
                       placeholder="Description de la mention..."
                     />
                   </div>
@@ -319,31 +219,23 @@ export function MentionManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code</TableHead>
+                  <TableHead>abbreviation</TableHead>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Responsable</TableHead>
-                  <TableHead>Parcours</TableHead>
-                  <TableHead>Date Création</TableHead>
-                  <TableHead>Statut</TableHead>
+                  <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredMentions.map((mention) => (
-                  <TableRow key={mention.id}>
-                    <TableCell className="font-medium">{mention.code}</TableCell>
+                  <TableRow key={mention.id_mention}>
+                    <TableCell className="font-medium">{mention.abbreviation}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{mention.nom}</div>
-                        <div className="text-sm text-muted-foreground truncate max-w-xs">{mention.description}</div>
+                        <div className="font-medium">{mention.nom_mention}</div>
+                        <div className="text-sm text-muted-foreground truncate max-w-xs">{mention.description_mention}</div>
                       </div>
                     </TableCell>
-                    <TableCell>{mention.responsable}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{mention.nombreParcours}</Badge>
-                    </TableCell>
-                    <TableCell>{new Date(mention.dateCreation).toLocaleDateString("fr-FR")}</TableCell>
-                    <TableCell>{getStatusBadge(mention.statut)}</TableCell>
+                    <TableCell>{mention.description_mention}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEdit(mention)}>
@@ -359,14 +251,14 @@ export function MentionManagement() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Êtes-vous sûr de vouloir supprimer la mention "{mention.nom}" ? Cette action est
+                                Êtes-vous sûr de vouloir supprimer la mention "{mention.nom_mention}" ? Cette action est
                                 irréversible.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Annuler</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(mention.id)}
+                                onClick={() => handleDelete(mention.id_mention||0)}
                                 className="bg-destructive hover:bg-destructive/90"
                               >
                                 Supprimer
@@ -385,23 +277,23 @@ export function MentionManagement() {
           {/* Version Mobile - Cards */}
           <div className="md:hidden space-y-4">
             {filteredMentions.map((mention) => (
-              <div key={mention.id} className="bg-card border rounded-lg p-4 shadow-sm">
-                {/* Header de la carte avec code et statut */}
+              <div key={mention.id_mention} className="bg-card border rounded-lg p-4 shadow-sm">
+                {/* Header de la carte avec abbreviation et statut */}
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
                     <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
-                      {mention.code}
+                      {mention.abbreviation}
                     </span>
-                    {getStatusBadge(mention.statut)}
+                    {/* {getStatusBadge(mention.statut)} */}
                   </div>
                 </div>
                 
-                {/* Nom et description */}
+                {/* nom_mention et description */}
                 <div className="mb-4">
-                  <h3 className="font-semibold text-base mb-1">{mention.nom}</h3>
-                  {mention.description && (
+                  <h3 className="font-semibold text-base mb-1">{mention.nom_mention}</h3>
+                  {mention.description_mention && (
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {mention.description}
+                      {mention.description_mention}
                     </p>
                   )}
                 </div>
@@ -409,18 +301,18 @@ export function MentionManagement() {
                 {/* Informations principales */}
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Responsable:</span>
-                    <span className="text-sm font-medium">{mention.responsable}</span>
+                    <span className="text-sm text-muted-foreground">description_mention:</span>
+                    <span className="text-sm font-medium">{mention.description_mention}</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Parcours:</span>
-                    <Badge variant="outline" className="text-xs">{mention.nombreParcours}</Badge>
+                    {/* <Badge variant="outline" className="text-xs">{mention.nombreParcours}</Badge> */}
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Date création:</span>
-                    <span className="text-sm">{new Date(mention.dateCreation).toLocaleDateString("fr-FR")}</span>
+                    {/* <span className="text-sm">{new Date(mention.dateCreation).toLocaleDateString("fr-FR")}</span> */}
                   </div>
                 </div>
 
@@ -446,14 +338,14 @@ export function MentionManagement() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Êtes-vous sûr de vouloir supprimer la mention "{mention.nom}" ? Cette action est
+                          Êtes-vous sûr de vouloir supprimer la mention "{mention.nom_mention}" ? Cette action est
                           irréversible.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                         <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleDelete(mention.id)}
+                          onClick={() => handleDelete(mention.id_mention||0)}
                           className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
                         >
                           Supprimer
@@ -489,36 +381,27 @@ export function MentionManagement() {
               <Label htmlFor="edit-nom">Nom de la mention *</Label>
               <Input
                 id="edit-nom"
-                value={formData.nom}
-                onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                value={formData.nom_mention}
+                onChange={(e) => setFormData({ ...formData, nom_mention: e.target.value })}
                 placeholder="Ex: Informatique"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-code">Code *</Label>
+              <Label htmlFor="edit-abbreviation">Abbreviation *</Label>
               <Input
-                id="edit-code"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                id="edit-abbreviation"
+                value={formData.abbreviation}
+                onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
                 placeholder="Ex: INFO"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-responsable">Responsable *</Label>
-              <Input
-                id="edit-responsable"
-                value={formData.responsable}
-                onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
-                placeholder="Ex: Dr. Ahmed Benali"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
                 id="edit-description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Description de la mention..."
+                value={formData.description_mention}
+                onChange={(e) => setFormData({ ...formData, description_mention: e.target.value })}
+                placeholder="description_mention de la mention..."
               />
             </div>
           </div>
