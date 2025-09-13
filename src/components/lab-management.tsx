@@ -1,11 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
@@ -27,61 +26,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Plus, Search, Edit, Trash2, FlaskConical, X } from "lucide-react"
+import { Plus, Search, Edit, Trash2, FlaskConical, X, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { get } from "@/services/api/mention.api"
-import { Mention } from "@/services/types/mention"
-import { getAllPersons } from "@/services/api/person.api"
-import { addDescription, addLabo, deleteDescription, deleteLabo, getLabos, updateDescription, updateLabo } from "@/services/api/labo.api"
+import { addDescription, deleteDescription } from "@/services/api/labo.api"
 import { DescriptionItem, Laboratory } from "@/services/types/labo"
-import { BasePerson } from "@/services/types/person"
+import { useLabo } from "@/hooks/useLabo"
 
 
 export function LabManagement() {
   
-      useEffect(() => {
-        const fetchMention = async () => {
-          try {
-            const mentions = await get();
-            setMention(mentions);
-          } catch (err) {
-            toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-          }
-        };
+  const {mentions, persons, laboratories, createLaboratory ,updateLabos , removeLabos} = useLabo();
       
-        fetchMention();
-      }, []);
-
-      useEffect(() => {
-        const fetchPersons = async () => {
-          try {
-            const persons = await getAllPersons();
-            setPerson(persons);
-          } catch (err) {
-            toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-          }
-        };
-      
-        fetchPersons();
-      }, []);
-
-
-      useEffect(() => {
-        const fetchLabos = async () => {
-          try {
-            const labos = await getLabos();
-            setLaboratories(labos);
-          } catch (err) {
-            toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-          }
-        };
-      
-        fetchLabos();
-      }, []);
-
-  const [laboratories, setLaboratories] = useState<Laboratory[]>([])
-  const [mentions , setMention] = useState<Mention[]>([])
-  const [persons , setPerson] = useState<BasePerson[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedMention, setSelectedMention] = useState<string>("all")
   // const [selectedStatus, setSelectedStatus] = useState<string>("all")
@@ -240,8 +195,7 @@ const handleAdd = async () => {
       })),
     };
 
-    const addedLabo = await addLabo(newLab);
-    setLaboratories([...laboratories, addedLabo]);
+    await createLaboratory(newLab);
     setIsAddDialogOpen(false);
     resetForm();
 
@@ -300,14 +254,8 @@ const handleAdd = async () => {
   };
 
   try {
-    const updatedLab = await updateLabo(editingLab.idLabo!, updatedLabData);
+    await updateLabos(editingLab.idLabo!, updatedLabData);
 
-    // Met à jour le tableau local
-    setLaboratories(
-      laboratories.map((lab) =>
-        lab.idLabo === updatedLab.idLabo ? updatedLab : lab
-      )
-    );
 
     setIsEditDialogOpen(false);
     setEditingLab(null);
@@ -328,9 +276,8 @@ const handleAdd = async () => {
 
   const handleDelete = async (idLabo: number) => {
   try {
-    await deleteLabo(idLabo);
+    await removeLabos(idLabo);
 
-    setLaboratories(laboratories.filter((lab) => lab.idLabo !== idLabo));
 
     toast({
       title: "Succès",

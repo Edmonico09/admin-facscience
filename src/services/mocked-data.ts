@@ -3,6 +3,7 @@ import { Actualite } from "./types/event";
 import { StatItem } from "./types/stat";
 import { Mention } from "@/services/types/mention";
 import { FormationEnum, NiveauEnum, Parcours } from "@/services/types/parcours"
+import { Person } from "./types/person";
 
 export const stats : StatItem[] = [
 { title: "Mentions", value: "12", icon: GraduationCap, color: "text-university-primary", change: "+2" },
@@ -48,34 +49,40 @@ export const recentActivities = [
 
 export const upcomingEvents: Actualite[] = [
   {
-    id_actualite: 1,
+    idActualite: 1,
     titre: "Réunion du conseil pédagogique",
-    id_categorie: 'Reunion',
+    categorie: 'Reunion',
     description: "Réunion pour discuter des nouvelles orientations pédagogiques.",
-    date_creation: new Date(),
-    date_commencement: new Date("2025-01-15T14:00:00"),
-    date_fin: new Date("2025-01-15T15:00:00"),
+    dateCreation: new Date(),
+    dateCommencement: new Date("2025-01-15T14:00:00"),
+    dateFin: new Date("2025-01-15T15:00:00"),
     lieu: "Salle A",
+    statut: "",
+    medias: []
   },
   {
-    id_actualite: 2,
+    idActualite: 2,
     titre: "Soutenance de thèse - Informatique",
-    id_categorie: 'Soutenance',
+    categorie: 'Soutenance',
     description: "Soutenance de thèse pour le département d'informatique.",
-    date_creation: new Date(),
-    date_commencement: new Date("2025-01-18T10:00:00"),
-    date_fin: new Date("2025-01-18T12:00:00"),
+    dateCreation: new Date(),
+    dateCommencement: new Date("2025-01-18T10:00:00"),
+    dateFin: new Date("2025-01-18T12:00:00"),
     lieu: "Amphi B",
+    statut: "",
+    medias: []
   },
   {
-    id_actualite: 3,
+    idActualite: 3,
     titre: "Conférence internationale IA",
-    id_categorie: 'Conference',
+    categorie: 'Conference',
     description: "Conférence internationale sur l'intelligence artificielle.",
-    date_creation: new Date(),
-    date_commencement: new Date("2025-01-22T09:00:00"),
-    date_fin: new Date("2025-01-22T17:00:00"),
+    dateCreation: new Date(),
+    dateCommencement: new Date("2025-01-22T09:00:00"),
+    dateFin: new Date("2025-01-22T17:00:00"),
     lieu: "Centre de conférence",
+    statut: "",
+    medias: []
   },
 ];
 
@@ -160,4 +167,99 @@ export const mockParcours: Parcours[] = [
 export const mockUsers = [
   { id: 1, identifiant: "alice", password: "password123", name: "Alice" },
   { id: 2, identifiant: "bob", password: "secret", name: "Bob" },
+];
+
+export const mockPersons: Person[] = [
+  {
+    id: 1,
+    type: "pat",
+    nom: "Ranaivo",
+    prenom: "Hery",
+    email: "hery.ranaivo@example.com",
+    tel: "+261341112233",
+    dateInsertion: "2025-01-15",
+    sexe: "M",
+    postAffectation: "Service Informatique",
+    grade: "Technicien Supérieur",
+    fonction: "Administrateur Système",
+  },
+  {
+    id: 2,
+    type: "pat",
+    nom: "Randria",
+    prenom: "Miora",
+    email: "miora.randria@example.com",
+    tel: "+261341223344",
+    dateInsertion: "2025-02-20",
+    sexe: "F",
+    postAffectation: "Bibliothèque",
+    grade: "Assistante",
+    fonction: "Gestion documentaire",
+  },
+  {
+    id: 3,
+    type: "professeur",
+    nom: "Rakoto",
+    prenom: "Jean",
+    email: "jean.rakoto@example.com",
+    tel: "+261341334455",
+    dateInsertion: "2024-11-05",
+    sexe: "M",
+    titre: "Professeur Titulaire",
+  },
+  {
+    id: 4,
+    type: "professeur",
+    nom: "Andrianina",
+    prenom: "Saholy",
+    email: "saholy.andrianina@example.com",
+    tel: "+261341445566",
+    dateInsertion: "2025-03-10",
+    sexe: "F",
+    titre: "Maître de Conférences",
+  },
+  {
+    id: 5,
+    type: "cofac",
+    nom: "Raveloson",
+    prenom: "Tojo",
+    email: "tojo.raveloson@example.com",
+    tel: "+261341556677",
+    dateInsertion: "2024-09-12",
+    sexe: "M",
+    appartenance: "Département Mathématiques",
+  },
+  {
+    id: 6,
+    type: "cofac",
+    nom: "Rakotomalala",
+    prenom: "Hanta",
+    email: "hanta.rakotomalala@example.com",
+    tel: "+261341667788",
+    dateInsertion: "2025-04-01",
+    sexe: "F",
+    appartenance: "Département Physique",
+  },
+  {
+    id: 7,
+    type: "doyen_et_vice",
+    nom: "Ratsimbazafy",
+    prenom: "Victor",
+    email: "victor.ratsimbazafy@example.com",
+    tel: "+261341778899",
+    dateInsertion: "2025-01-25",
+    sexe: "M",
+    responsabilite: "Doyen de la Faculté",
+  },
+  {
+    id: 8,
+    type: "doyen_et_vice",
+    nom: "Raharinirina",
+    prenom: "Fanja",
+    email: "fanja.rahari@example.com",
+    tel: "+261341889900",
+    dateInsertion: "2024-12-18",
+    sexe: "F",
+    responsabilite: "Vice-Doyenne Chargée des Études",
+  },
 ];

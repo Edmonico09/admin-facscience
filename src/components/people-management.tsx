@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,89 +31,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { BasePerson, COFAC, doyenEtVice, PAT, Person, PersonType, Professeur } from "@/services/types/person"
-import { createOptions, getSelectOptions } from "@/services/api/option.api"
+import { BasePerson, Person, PersonType } from "@/services/types/person"
+// import { createOptions, getSelectOptions } from "@/services/api/option.api"
 import { options } from "@/services/types/option"
-import { createPerson, deletePerson, getPersonsByType, updatePerson } from "@/services/api/person.api"
+import { usePeople } from "@/hooks/usePerson"
 
-
-// interface Person {
-//   id: number
-//   nom: string
-//   prenom: string
-//   sexe : "F" | "M"
-//   email: string
-//   tel: string
-//   type: PersonType
-//   dateInsertion: string
-//   // Specific fields
-//   postAffectation?: string
-//   grade?: string
-//   fonction?: string
-//   titre?: string
-//   appartenance?: string
-//   responsabilite?: string
-// }
-
-// const mockPeople: Person[] = [
-//   {
-//     id: 1,
-//     nom: "Benali",
-//     prenom: "Ahmed",
-//     email: "ahmed.benali@univ.ma",
-//     tel: "+212 6 12 34 56 78",
-//     type: "professeur",
-//     dateInsertion: "2020-09-01",
-//     sexe: "F",
-//     titre: "professeur",
-//   },
-//   {
-//     id: 2,
-//     nom: "Zahra",
-//     prenom: "Fatima",
-//     email: "fatima.zahra@univ.ma",
-//     tel: "+212 6 23 45 67 89",
-//     type: "professeur",
-//     dateInsertion: "2019-09-01",
-//     sexe: "F",
-//     titre: "Maître de Conférences",
-//   },
-//   {
-//     id: 3,
-//     nom: "Alami",
-//     prenom: "Mohamed",
-//     email: "mohamed.alami@univ.ma",
-//     tel: "+212 6 34 56 78 90",
-//     type: "doyenEtVice",
-//     dateInsertion: "2018-09-01",
-//     sexe: "F",
-//     responsabilite: "Doyen",
-//   },
-//   {
-//     id: 4,
-//     nom: "Bennani",
-//     prenom: "Aicha",
-//     email: "aicha.bennani@univ.ma",
-//     tel: "+212 6 45 67 89 01",
-//     type: "COFAC",
-//     dateInsertion: "2021-09-01",
-//     sexe: "F",
-//     appartenance: "Conseil Scientifique",
-//   },
-//   {
-//     id: 5,
-//     nom: "Idrissi",
-//     prenom: "Omar",
-//     email: "omar.idrissi@univ.ma",
-//     tel: "+212 6 56 78 90 12",
-//     type: "pat",
-//     dateInsertion: "2020-03-15",
-//     sexe: "F",
-//     postAffectation: "Secrétariat",
-//     grade: "Grade B",
-//     fonction: "Secrétaire",
-//   },
-// ]
 
 const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>> = {
   pat: (fd) => ({
@@ -133,44 +55,16 @@ const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>>
 };
 
 export function PeopleManagement() {
-
-   useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const postAffectations = await getSelectOptions("postAffectations");
-        const grades = await getSelectOptions("grades");
-        const fonctions = await getSelectOptions("fonctions");
-        const titres = await getSelectOptions("titres");
-        const appartenances = await getSelectOptions("appartenances");
-        const responsabilites = await getSelectOptions("responsabilites");
-  
-        setSelectOptions({ postAffectations, grades, fonctions, titres, appartenances, responsabilites });
-      } catch (err) {
-        toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-      }
-    };
-  
-    fetchOptions();
-  }, []);
-  
-
-
-  const [people, setPeople] = useState<Person[]>([]);
-  const [selectOptions, setSelectOptions] = useState<options>({
-    postAffectations: [],
-    grades: [],
-    fonctions: [],
-    titres: [],
-    appartenances: [],
-    responsabilites: [],
-  });
-  const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState<PersonType>("pat")
+  const { people, selectOptions, createOpt, createNewPerson , updatePersons , removePerson } = usePeople(activeTab);
+  const [addOptionType, setAddOptionType] = useState<keyof options>("postAffectations")
+  
+
+  const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isAddOptionDialogOpen, setIsAddOptionDialogOpen] = useState(false)
   const [editingPerson, setEditingPerson] = useState<Person | null>(null)
-  const [addOptionType, setAddOptionType] = useState<keyof options>("postAffectations")
   const [newOptionValue, setNewOptionValue] = useState("")
   const [formData, setFormData] = useState({
     nom: "",
@@ -188,52 +82,6 @@ export function PeopleManagement() {
   })
   const { toast } = useToast()
 
-   useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        switch (activeTab) {
-          case "pat":
-              (async () => {
-                const data = await getPersonsByType<PAT>("pat");
-                setPeople(data);
-              })();
-              break;
-              
-          case "professeur":
-
-             (async () => {
-                const data = await getPersonsByType<Professeur>("professeur");
-                setPeople(data);
-              })();
-              break;
-
-          case "cofac":
-
-          (async () => {
-            const data = await getPersonsByType<COFAC>("cofac");
-            setPeople(data);
-          })();
-          break;
-
-          case "doyen_et_vice":
-
-          (async () => {
-            const data = await getPersonsByType<doyenEtVice>("doyen_et_vice");
-            setPeople(data);
-          })();
-          break;
-
-          default:
-            return null
-        }        
-      } catch (err) {
-        toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-      }
-    };
-  
-    fetchOptions();
-  }, [activeTab]);
-  
 
 
   const filteredPeople = people.filter((person) => {
@@ -272,13 +120,8 @@ export function PeopleManagement() {
       return;
     }
   
-    try {
-      const addedOption = await createOptions(addOptionType, { nom: newOptionValue.trim() });
+      await createOpt(addOptionType, { nom: newOptionValue.trim() });
   
-      setSelectOptions(prev => ({
-        ...prev,
-        [addOptionType]: [...prev[addOptionType], addedOption],
-      }));
   
       setNewOptionValue("");
       setIsAddOptionDialogOpen(false);
@@ -286,13 +129,7 @@ export function PeopleManagement() {
         title: "Succès",
         description: "Option ajoutée avec succès",
       });
-    } catch (err) {
-      toast({
-        title: "Erreur",
-        description: (err as Error).message,
-        variant: "destructive",
-      });
-    }
+
   };
 
   const openAddOptionDialog = (optionType: keyof options) => {
@@ -310,7 +147,6 @@ export function PeopleManagement() {
     return;
   }
 
-  try {
     // Champs communs
     const basePerson: Omit<Person, "id"> = {
       nom: formData.nom,
@@ -319,7 +155,7 @@ export function PeopleManagement() {
       tel: formData.tel,
       type: formData.type,
       dateInsertion: new Date().toISOString().split("T")[0],
-      sexe: "M",
+      sexe: formData.sexe as "F" | "M",
     };
 
     // Ajouter les champs spécifiques dynamiquement
@@ -329,10 +165,9 @@ export function PeopleManagement() {
     };
 
     // Appel API générique
-    const newPerson = await createPerson(personData);
+    await createNewPerson(personData);
 
     // Mettre à jour l'état
-  setPeople([...people, newPerson as Person]);
     setIsAddDialogOpen(false);
     resetForm();
 
@@ -340,13 +175,7 @@ export function PeopleManagement() {
       title: "Succès",
       description: "Personne ajoutée avec succès",
     });
-  } catch (error) {
-    toast({
-      title: "Erreur",
-      description: (error as Error).message,
-      variant: "destructive",
-    });
-  }
+
 };
 
 
@@ -463,13 +292,7 @@ const handleEdit = (person: Person) => {
       };
       
       // Appel API pour mettre à jour
-      const updatedPerson = await updatePerson(personToUpdate);
-  
-      // Mettre à jour l'état local avec la réponse du serveur
-   setPeople((prev) =>
-      prev.map((p) => (p.id === updatedPerson.id ? (updatedPerson as Person) : p))
-  );
-
+      await updatePersons(personToUpdate);
   
       setIsEditDialogOpen(false);
       setEditingPerson(null);
@@ -491,11 +314,8 @@ const handleEdit = (person: Person) => {
   const handleDelete = async (person: Person) => {
     try {
       // Appel à l'API pour supprimer la personne
-      await deletePerson(person.type, person.id);
-  
-      // Mise à jour locale de la liste
-      setPeople((prev) => prev.filter((p) => p.id !== person.id));
-  
+      await removePerson(person);
+
       toast({
         title: "Succès",
         description: `Personne "${person.prenom} ${person.nom}" supprimée avec succès`,

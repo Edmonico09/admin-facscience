@@ -1,4 +1,5 @@
-import { createCategory, createMedia, createNews, deleteMedia, getCategory, getNews, UpdateNews } from "@/services/api/event.api";
+import { createCategory, createMedia, createNews, deleteMedia, deleteNews, getCategory, getNews, UpdateNews, updateStatus } from "@/services/api/event.api";
+import { upcomingEvents } from "@/services/mocked-data";
 import { Actualite, Category } from "@/services/types/event";
 import { useState, useEffect, useCallback } from "react";
 
@@ -25,6 +26,7 @@ export function useNews(){
         } finally {
           setLoading(false);
         }
+        setNews(upcomingEvents)
       }, []);
 
 
@@ -78,9 +80,12 @@ export function useNews(){
             : item
         )
         );
+        return true;
+        
     } catch (err: any) {
         setError(err.message || "Erreur lors de la suppression du médias");
-    } finally {
+        throw err;
+      } finally {
         setLoading(false);
     }
     }, []);  
@@ -118,7 +123,47 @@ export function useNews(){
         }
       }, []);
     
+
+    const removeNews = useCallback(async ( idActualite : number) => {
+      setLoading(true);
+      setError(null);
+      try {
+          await deleteNews(idActualite);
+          
+  
+          setNews((prev) => prev.filter((n) => n.idActualite !== idActualite));
+
+          return true;
+      } catch (err: any) {
+          setError(err.message || "Erreur lors de la suppression de l'actualité");
+          throw err;
+        } finally {
+          setLoading(false);
+      }
+      }, []);  
     
+    
+      const changeStatus = useCallback(async (    
+        idActualite: number,
+        newStatus: "draft" | "published" | "archived"
+    ) => {
+        setLoading(true);
+        setError(null);
+        try {
+        const updatedNews = await updateStatus(idActualite, newStatus);
+        setNews((prev) =>
+          prev.map((n) => (n.idActualite === idActualite ? updatedNews : n))
+        );
+        return updatedNews;
+    } catch (err: any) {
+        setError(err.message || "Erreur lors de la création de la média");
+        throw err;  
+      } finally {
+        setLoading(false);
+        }
+    }, []);
+
+
       useEffect(() => {
         fetchAll();
       }, [fetchAll ]);
@@ -133,6 +178,8 @@ export function useNews(){
         createMedias,
         removeMedia,
         createActualite,
-        updateActus
+        updateActus,
+        removeNews,
+        changeStatus
       }
 }

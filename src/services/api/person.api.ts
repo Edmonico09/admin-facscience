@@ -1,5 +1,5 @@
 import { baseURL } from "..";
-import { BasePerson, BasePersonWithoutId, COFAC, doyenEtVice, PAT , Professeur , } from "../types/person";
+import { BasePerson, BasePersonWithoutId } from "../types/person";
 
 function getCreateUrl(type : string){
     switch (type) {

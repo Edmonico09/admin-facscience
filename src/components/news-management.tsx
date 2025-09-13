@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,39 +33,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, Edit, Trash2, Newspaper, Calendar, MapPin, ImageIcon, X, Tag } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Actualite, Category, Media } from "@/services/types/event"
-import { createCategory, createMedia, createNews, deleteMedia, deleteNews, getCategory, getNews, UpdateNews, updateStatus } from "@/services/api/event.api"
+// import {  createMedia, createNews, deleteMedia, deleteNews, getCategory, getNews, UpdateNews, updateStatus } from "@/services/api/event.api"
+import { useNews } from "@/hooks/useNews"
 
 export function NewsManagement() {
 
-   useEffect(() => {
-      const fetchOptions = async () => {
-        try {
-          const categories = await getCategory();
-          setCategories(categories);
-        } catch (err) {
-          toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-        }
-      };
-    
-      fetchOptions();
-    }, []);
+  const {news, categories,createCategories , createMedias, removeMedia , createActualite , updateActus , removeNews , changeStatus} = useNews();
   
-     useEffect(() => {
-      const fetchNews = async () => {
-        try {
-          const news_ = await getNews();
-          setNews(news_);
-        } catch (err) {
-          toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-        }
-      };
-    
-      fetchNews();
-    }, []);
-  
-  const [categories, setCategories] = useState<Category[]>([])
-
-  const [news, setNews] = useState<Actualite[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
@@ -73,6 +47,7 @@ export function NewsManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
   const [editingNews, setEditingNews] = useState<Actualite | null>(null)
+
   const [formData, setFormData] = useState<Actualite>({
       titre: "" ,          
       categorie: "" ,         
@@ -130,34 +105,24 @@ export function NewsManagement() {
       return
     }
 
-    try{
-      const newCategory =  await createCategory(categoryForm.nom);
+      await createCategories(categoryForm.nom);
     
-      setCategories([...categories, newCategory])
       setCategoryForm({ nom: ""})
       setIsCategoryDialogOpen(false)
       toast({
         title: "Succès",
         description: "Catégorie ajoutée avec succès",
       })
-    } catch(err){
-      toast({
-         title: "Erreur",
-        description: (err as Error).message,
-        variant: "destructive",
-      })
-    }
-
+    
 
 
   }
 
   const handleAddMedia = async (file : File) => {
-    try {
       if(!editingNews?.idActualite){
               throw new Error("Aucune actualité sélectionnée pour uploader un média");
       }
-      const newMedia = await createMedia(editingNews.idActualite , file);
+      const newMedia = await createMedias(file , editingNews.idActualite );
   
   
       setFormData({
@@ -169,23 +134,15 @@ export function NewsManagement() {
         title: "Succés",
         description : "Média ajouté avec succés",
       })
-    }catch(err){
-       toast({
-        title: "Erreur",
-        description : (err as Error).message,
-        variant : "destructive"
-      })
-    }
 
   }
 
   const handleRemoveMedia = async (mediaId: number) => {
-  try {
     if (!editingNews?.idActualite) {
       throw new Error("Aucune actualité sélectionnée");
     }
 
-    await deleteMedia(editingNews.idActualite, mediaId);
+    await removeMedia(editingNews.idActualite, mediaId);
 
     setFormData({
       ...formData,
@@ -196,20 +153,14 @@ export function NewsManagement() {
       title: "Succès",
       description: "Média supprimé avec succès",
     });
-  } catch (err) {
-    toast({
-      title: "Erreur",
-      description: (err as Error).message,
-      variant: "destructive",
-    });
-  }
+
 };
 
 
 const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   if (e.target.files && e.target.files[0]) {
     const file = e.target.files[0]
-    const uploadedMedia = await createMedia(editingNews?.idActualite ?? 0, file)
+    const uploadedMedia = await createMedias(file, editingNews?.idActualite ?? 0)
     setFormData({
       ...formData,
       medias: [...formData.medias, uploadedMedia],
@@ -217,7 +168,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 }
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (
       !formData.titre ||
       !formData.categorie ||
@@ -246,9 +197,8 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       medias: formData.medias,
     }
 
-    const addNews = createNews(newNews);
+    await createActualite(newNews);
 
-    // setNews([...news, newNews])
     setIsAddDialogOpen(false)
     resetForm()
     toast({
@@ -306,10 +256,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 
 
-    const savedNews = await UpdateNews(updatedActualite)
-    setNews((prev) =>
-      prev.map((n) => (n.idActualite === savedNews.idActualite ? savedNews : n)),
-    )
+    await updateActus(updatedActualite)
     setIsEditDialogOpen(false)
     setEditingNews(null)
     resetForm()
@@ -320,22 +267,14 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 
   const handleDelete = async (id: number) => {
-    try {
-      await deleteNews(id);
+      await removeNews(id);
 
-      setNews((prev) => prev.filter((n) => n.idActualite !== id));
 
       toast({
         title: "Succès",
         description: "Actualité supprimée avec succès",
       });
-    } catch (err) {
-      toast({
-        title: "Erreur",
-        description: (err as Error).message,
-        variant: "destructive",
-      });
-    }
+
   };
 
 
@@ -343,24 +282,14 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     idActualite: number,
     newStatus: "draft" | "published" | "archived"
   ) => {
-    try {
-      const updatedNews = await updateStatus(idActualite, newStatus);
+      await changeStatus(idActualite, newStatus);
 
-      setNews((prev) =>
-        prev.map((n) => (n.idActualite === idActualite ? updatedNews : n))
-      );
 
       toast({
         title: "Succès",
         description: `Statut mis à jour vers ${newStatus}`,
       });
-    } catch (err) {
-      toast({
-        title: "Erreur",
-        description: (err as Error).message,
-        variant: "destructive",
-      });
-    }
+
   };
 
   const getStatusBadge = (statut: "draft" | "published" | "archived") => {
