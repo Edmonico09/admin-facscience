@@ -36,8 +36,13 @@ jobs:
           chmod 600 /tmp/private_key
 
           # Copier l'image vers le serveur
+<<<<<<< HEAD
           scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/${{ secrets.DOCKER_IMAGE_NAME }}.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit/${{ secrets.DOCKER_IMAGE_NAME }}
           scp -o StrictHostKeyChecking=no -i /tmp/private_key docker-compose.yml \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit/${{ secrets.DOCKER_IMAGE_NAME }}
+=======
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/admin-facscience.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit/container
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key docker-compose.yml \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit/container
+>>>>>>> b00c101 (Initial for gitea)
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
