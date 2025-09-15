@@ -24,7 +24,7 @@ jobs:
 
       # Create directory 
 
-      - name: Execute commande
+      - name: Create directory
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
