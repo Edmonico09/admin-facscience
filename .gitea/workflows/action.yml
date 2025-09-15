@@ -19,6 +19,19 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKER_IMAGE_NAME }}:latest .
 
+      # Create directory 
+
+      - name: Execute commande
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            mkdir /home/mit/${{ secrets.DOCKER_IMAGE_NAME }}
+            ls -al /home/mit
+
       # Save Docker image as tar
 
       - name: Save Docker image to tar
@@ -36,8 +49,8 @@ jobs:
           chmod 600 /tmp/private_key
 
           # Copier l'image vers le serveur
-          scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/${{ secrets.DOCKER_IMAGE_NAME }}.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit
-          scp -o StrictHostKeyChecking=no -i /tmp/private_key docker-compose.yml \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key /tmp/deploy/${{ secrets.DOCKER_IMAGE_NAME }}.tar \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit/${{ secrets.DOCKER_IMAGE_NAME }}
+          scp -o StrictHostKeyChecking=no -i /tmp/private_key docker-compose.yml \${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/mit/${{ secrets.DOCKER_IMAGE_NAME }}
 
       # Load Docker image and deploy with docker-compose
       - name: Load and deploy on server
