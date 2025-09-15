@@ -22,7 +22,7 @@ jobs:
           docker tag $IMAGE_TAG ${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
 
-      # Create directory 
+      #Create directory
 
       - name: Create directory
         uses: appleboy/ssh-action@v1
