@@ -703,7 +703,7 @@ const handleEdit = (person: Person) => {
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="doyen_et_vice" className="flex items-center gap-2">
-                Tête
+                Decanat
                 <Badge variant="secondary" className="text-xs">
                   {tabCounts.doyen_et_vice}
                 </Badge>
