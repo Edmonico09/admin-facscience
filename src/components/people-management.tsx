@@ -29,12 +29,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User, UserIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { BasePerson, COFAC, doyenEtVice, PAT, Person, PersonType, Professeur } from "@/services/types/person"
 // import { createOptions, getSelectOptions } from "@/services/api/option.api"
 import { options } from "@/services/types/option"
-import { usePeople } from "@/hooks/usePerson"
+import { useImageFallback, usePeople } from "@/hooks/usePerson"
 
 
 
@@ -62,6 +62,7 @@ export function PeopleManagement() {
   const { people, selectOptions, createOpt, createNewPerson , updatePersons , removePerson } = usePeople(activeTab);
   const [addOptionType, setAddOptionType] = useState<keyof options>("postAffectations")
   
+  const { error, handleError, src } = useImageFallback()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -726,6 +727,8 @@ const handleEdit = (person: Person) => {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                        <TableHead>Image</TableHead>
+
                           <TableHead>Nom</TableHead>
                           <TableHead>Contact</TableHead>
                           <TableHead>Type</TableHead>
@@ -737,6 +740,21 @@ const handleEdit = (person: Person) => {
                       <TableBody>
                         {filteredPeople.map((person) => (
                           <TableRow key={person.id}>
+
+                              <TableCell>
+                                    <div className="flex items-center">
+                                      {!error ? (
+                                        <img
+                                          src={src(`/images/${person.id}.jpg`)}
+                                          alt={`${person.prenom} ${person.nom}`}
+                                          className="w-10 h-10 rounded-full object-cover"
+                                          onError={handleError}
+                                        />
+                                      ) : (
+                                        <UserIcon className="w-10 h-10 text-gray-400" />
+                                      )}
+                                    </div>
+                                  </TableCell>
                             <TableCell>
                               <div>
                                 <div className="font-medium">

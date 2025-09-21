@@ -182,3 +182,18 @@ export function usePeople(activeTab: string) {
     removePerson
   };
 }
+
+export function useImageFallback(fallbackSrc?: string) {
+  const [error, setError] = useState(false)
+
+  const handleError = () => {
+    setError(true)
+  }
+
+  return {
+    error,
+    handleError,
+    src: (src: string) => (error && fallbackSrc ? fallbackSrc : src),
+  }
+}
+
