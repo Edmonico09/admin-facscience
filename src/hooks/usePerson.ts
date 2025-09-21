@@ -3,7 +3,6 @@ import { createOptions, getSelectOptions } from "@/services/api/option.api";
 import { createPerson, deletePerson, getPersonsByType, updatePerson } from "@/services/api/person.api"; // <-- assure-toi que c’est bien importé
 import { option, options } from "@/services/types/option";
 import { Person, PAT, Professeur, COFAC, doyenEtVice, BasePerson } from "@/services/types/person";
-import { mockPersons } from "@/services/mocked-data";
 
 export function usePeople(activeTab: string) {
   const [loading, setLoading] = useState<boolean>(false);
@@ -86,16 +85,11 @@ export function usePeople(activeTab: string) {
         default:
           setPeople([]);
       }
-      
-
     } catch (err: any) {
       setError(err.message || "Erreur lors du chargement des personnes");
     } finally {
       setLoading(false);
     }
-    
-    setPeople(mockPersons);
-
   }, [activeTab]);
 
 
@@ -153,7 +147,10 @@ export function usePeople(activeTab: string) {
           setError(null);
           try {
                 await deletePerson(person.type, person.id);
+
+      
                 setPeople((prev) => prev.filter((p) => p.id !== person.id));
+    
               return true;
           } catch (err: any) {
               setError(err.message || "Erreur lors de la suppression de personne");

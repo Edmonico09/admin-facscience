@@ -31,10 +31,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { BasePerson, Person, PersonType } from "@/services/types/person"
+import { BasePerson, COFAC, doyenEtVice, PAT, Person, PersonType, Professeur } from "@/services/types/person"
 // import { createOptions, getSelectOptions } from "@/services/api/option.api"
 import { options } from "@/services/types/option"
 import { usePeople } from "@/hooks/usePerson"
+
 
 
 const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>> = {
@@ -55,6 +56,8 @@ const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>>
 };
 
 export function PeopleManagement() {
+
+  
   const [activeTab, setActiveTab] = useState<PersonType>("pat")
   const { people, selectOptions, createOpt, createNewPerson , updatePersons , removePerson } = usePeople(activeTab);
   const [addOptionType, setAddOptionType] = useState<keyof options>("postAffectations")
@@ -121,6 +124,7 @@ export function PeopleManagement() {
     }
   
       await createOpt(addOptionType, { nom: newOptionValue.trim() });
+      await createOpt(addOptionType, { nom: newOptionValue.trim() });
   
   
       setNewOptionValue("");
@@ -129,6 +133,7 @@ export function PeopleManagement() {
         title: "Succès",
         description: "Option ajoutée avec succès",
       });
+
 
   };
 
@@ -166,6 +171,7 @@ export function PeopleManagement() {
 
     // Appel API générique
     await createNewPerson(personData);
+    await createNewPerson(personData);
 
     // Mettre à jour l'état
     setIsAddDialogOpen(false);
@@ -175,6 +181,7 @@ export function PeopleManagement() {
       title: "Succès",
       description: "Personne ajoutée avec succès",
     });
+
 
 };
 
@@ -294,6 +301,8 @@ const handleEdit = (person: Person) => {
       // Appel API pour mettre à jour
       await updatePersons(personToUpdate);
   
+
+  
       setIsEditDialogOpen(false);
       setEditingPerson(null);
       resetForm();
@@ -315,7 +324,8 @@ const handleEdit = (person: Person) => {
     try {
       // Appel à l'API pour supprimer la personne
       await removePerson(person);
-
+  
+  
       toast({
         title: "Succès",
         description: `Personne "${person.prenom} ${person.nom}" supprimée avec succès`,
