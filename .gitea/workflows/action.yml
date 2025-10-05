@@ -17,11 +17,14 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_IMAGE_NAME }}:latest .
+          IMAGE_TAG=${{ secrets.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+          docker build -t $IMAGE_TAG .
+          docker tag $IMAGE_TAG ${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
-      # Create directory 
 
-      - name: Execute commande
+      #Create directory
+
+      - name: Create directory
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
