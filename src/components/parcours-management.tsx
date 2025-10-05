@@ -228,11 +228,13 @@ export function ParcoursManagement() {
                         <SelectValue placeholder="Sélectionner une mention" />
                       </SelectTrigger>
                       <SelectContent>
-                        {mentions.map((mention) => (
-                          <SelectItem key={mention.id_mention} value={mention.id_mention?.toString()||""}>
-                            {mention.nom_mention} ({mention.abbreviation})
-                          </SelectItem>
-                        ))}
+                        {mentions
+                          .filter((mention) => mention.id_mention !== undefined && mention.id_mention !== null)
+                          .map((mention) => (
+                            <SelectItem key={mention.id_mention} value={String(mention.id_mention)}>
+                              {mention.nom_mention} ({mention.abbreviation})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -314,11 +316,13 @@ export function ParcoursManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes mentions</SelectItem>
-                {mentions.map((mention) => (
-                  <SelectItem key={mention.id_mention} value={mention.id_mention?.toString()||""}>
-                    {mention.nom_mention} {mention.abbreviation}
-                  </SelectItem>
-                ))}
+                {mentions
+                  .filter((mention) => mention.id_mention !== undefined && mention.id_mention !== null)
+                  .map((mention) => (
+                    <SelectItem key={mention.id_mention} value={String(mention.id_mention)}>
+                      {mention.nom_mention} {mention.abbreviation}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
             <Select value={selectedNiveau} onValueChange={setSelectedNiveau}>
@@ -544,11 +548,13 @@ export function ParcoursManagement() {
                   <SelectValue placeholder="Sélectionner une mention" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mentions.map((mention) => (
-                    <SelectItem key={mention.id_mention} value={mention.id_mention?.toString()||""}>
-                      {mention.nom_mention} ({mention.abbreviation})
-                    </SelectItem>
-                  ))}
+                  {mentions
+                    .filter((mention) => mention.id_mention !== undefined && mention.id_mention !== null)
+                    .map((mention) => (
+                      <SelectItem key={mention.id_mention} value={String(mention.id_mention)}>
+                        {mention.nom_mention} ({mention.abbreviation})
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
