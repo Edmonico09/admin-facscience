@@ -54,31 +54,31 @@ export function ParcoursManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingParcours, setEditingParcours] = useState<Parcours | null>(null)
   const [formData, setFormData] = useState({
-    nom_parcours: "",
-    id_mention: "",
-    niveau_parcours: "" as NiveauEnum | "",
-    formation_type: "" as FormationEnum | "",
-    description_parcours: "",
+    NomParcours: "",
+    IdMention: "",
+    NiveauParcours: "" as NiveauEnum | "",
+    Formation: "" as FormationEnum | "",
+    DescriptionParcours: "",
   })
 
   const niveauxOptions = Object.values(NiveauEnum)
   const formationOptions = Object.values(FormationEnum)
 
 
-  const resetForm = () => setFormData({ nom_parcours: "", id_mention: "", niveau_parcours: "", formation_type: "", description_parcours: "" })
+  const resetForm = () => setFormData({ NomParcours: "", IdMention: "", NiveauParcours: "", Formation: "", DescriptionParcours: "" })
 
   const handleAdd = async () => {
-    if (!formData.nom_parcours || !formData.id_mention || !formData.niveau_parcours || !formData.formation_type) {
+    if (!formData.NomParcours || !formData.IdMention || !formData.NiveauParcours || !formData.Formation) {
       toast({ title: "Erreur", description: "Veuillez remplir tous les champs obligatoires", variant: "destructive" })
       return
     }
     try {
       await createParcours({
-        nom_parcours: formData.nom_parcours,
-        id_mention: Number(formData.id_mention),
-        niveau_parcours: formData.niveau_parcours as NiveauEnum,
-        formation_type: formData.formation_type as FormationEnum,
-        description_parcours: formData.description_parcours,
+        NomParcours: formData.NomParcours,
+        IdMention: Number(formData.IdMention),
+        NiveauParcours: formData.NiveauParcours as NiveauEnum,
+        Formation: formData.Formation as FormationEnum,
+        DescriptionParcours: formData.DescriptionParcours,
       })
       setIsAddDialogOpen(false)
       resetForm()
@@ -91,27 +91,27 @@ export function ParcoursManagement() {
   const handleEdit = (p: Parcours) => {
     setEditingParcours(p)
     setFormData({
-      nom_parcours: p.nom_parcours,
-      id_mention: p.id_mention.toString(),
-      niveau_parcours: p.niveau_parcours||"",
-      formation_type: p.formation_type||"Academique",
-      description_parcours: p.description_parcours || "",
+      NomParcours: p.NomParcours,
+      IdMention: p.IdMention.toString(),
+      NiveauParcours: p.NiveauParcours||"",
+      Formation: p.Formation||"Academique",
+      DescriptionParcours: p.DescriptionParcours || "",
     })
     setIsEditDialogOpen(true)
   }
 
   const handleUpdate = async () => {
-    if (!formData.nom_parcours || !formData.id_mention || !formData.niveau_parcours || !formData.formation_type || !editingParcours) {
+    if (!formData.NomParcours || !formData.IdMention || !formData.NiveauParcours || !formData.Formation || !editingParcours) {
       toast({ title: "Erreur", description: "Veuillez remplir tous les champs obligatoires", variant: "destructive" })
       return
     }
     try {
-      await updateParcours(editingParcours.id_parcours||0, {
-        nom_parcours: formData.nom_parcours,
-        id_mention: Number(formData.id_mention),
-        niveau_parcours: formData.niveau_parcours as NiveauEnum,
-        formation_type: formData.formation_type as FormationEnum,
-        description_parcours: formData.description_parcours,
+      await updateParcours(editingParcours.IdParcours||0, {
+        NomParcours: formData.NomParcours,
+        IdMention: Number(formData.IdMention),
+        NiveauParcours: formData.NiveauParcours as NiveauEnum,
+        Formation: formData.Formation as FormationEnum,
+        DescriptionParcours: formData.DescriptionParcours,
       })
       setIsEditDialogOpen(false)
       setEditingParcours(null)
@@ -133,21 +133,21 @@ export function ParcoursManagement() {
 
   // Filtrage
   const filteredParcours = parcours.filter((p:Parcours) => {
-    const matchesSearch = p.nom_parcours.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentions.find((m) => m.id_mention === p.id_mention)?.nom_mention.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesMention = selectedMention === "all" || p.id_mention.toString() === selectedMention
-    const matchesNiveau = selectedNiveau === "all" || p.niveau_parcours === selectedNiveau
-    const matchesFormation = selectedFormation === "all" || p.formation_type === selectedFormation
+    const matchesSearch = p.NomParcours.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mentions.find((m) => m.IdMention === p.IdMention)?.NomMention.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesMention = selectedMention === "all" || p.IdMention.toString() === selectedMention
+    const matchesNiveau = selectedNiveau === "all" || p.NiveauParcours === selectedNiveau
+    const matchesFormation = selectedFormation === "all" || p.Formation === selectedFormation
     return matchesSearch && matchesMention && matchesNiveau && matchesFormation
   })
 
   const getParcoursGroupedByMention = () => {
     const grouped: { [key: number]: { mention: Mention; parcours: Parcours[] } } = {}
     filteredParcours.forEach((p:Parcours) => {
-      const mention = mentions.find((m) => m.id_mention === p.id_mention)
+      const mention = mentions.find((m) => m.IdMention === p.IdMention)
       if (mention) {
-        if (!grouped[mention.id_mention||0]) grouped[mention.id_mention||0] = { mention, parcours: [] }
-        grouped[mention.id_mention||0].parcours.push(p)
+        if (!grouped[mention.IdMention||0]) grouped[mention.IdMention||0] = { mention, parcours: [] }
+        grouped[mention.IdMention||0].parcours.push(p)
       }
     })
     return Object.values(grouped)
@@ -216,24 +216,24 @@ export function ParcoursManagement() {
                     <Label htmlFor="nom">Nom du parcours *</Label>
                     <Input
                       id="nom"
-                      value={formData.nom_parcours}
-                      onChange={(e) => setFormData({ ...formData, nom_parcours: e.target.value })}
+                      value={formData.NomParcours}
+                      onChange={(e) => setFormData({ ...formData, NomParcours: e.target.value })}
                       placeholder="Ex: Génie Logiciel"
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="mention">Mention *</Label>
                     <Select
-                      value={formData.id_mention}
-                      onValueChange={(value) => setFormData({ ...formData, id_mention: value })}
+                      value={formData.IdMention}
+                      onValueChange={(value) => setFormData({ ...formData, IdMention: value })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner une mention" />
                       </SelectTrigger>
                       <SelectContent>
                         {mentions.map((mention) => (
-                          <SelectItem key={mention.id_mention} value={mention.id_mention?.toString()||""}>
-                            {mention.nom_mention} ({mention.abbreviation})
+                          <SelectItem key={mention.IdMention} value={mention.IdMention?.toString()||""}>
+                            {mention.NomMention} ({mention.Abbreviation})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -243,8 +243,8 @@ export function ParcoursManagement() {
                     <div className="grid gap-2">
                       <Label htmlFor="niveau">Niveau *</Label>
                       <Select
-                        value={formData.niveau_parcours}
-                        onValueChange={(value) => setFormData({ ...formData, niveau_parcours: value as NiveauEnum })}
+                        value={formData.NiveauParcours}
+                        onValueChange={(value) => setFormData({ ...formData, NiveauParcours: value as NiveauEnum })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Niveau" />
@@ -261,8 +261,8 @@ export function ParcoursManagement() {
                     <div className="grid gap-2">
                       <Label htmlFor="formation">Formation *</Label>
                       <Select
-                        value={formData.formation_type}
-                        onValueChange={(value) => setFormData({ ...formData, formation_type: value as FormationEnum })}
+                        value={formData.Formation}
+                        onValueChange={(value) => setFormData({ ...formData, Formation: value as FormationEnum })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Type" />
@@ -281,8 +281,8 @@ export function ParcoursManagement() {
                     <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
-                      value={formData.description_parcours}
-                      onChange={(e) => setFormData({ ...formData, description_parcours: e.target.value })}
+                      value={formData.DescriptionParcours}
+                      onChange={(e) => setFormData({ ...formData, DescriptionParcours: e.target.value })}
                       placeholder="Description du parcours..."
                     />
                   </div>
@@ -318,8 +318,8 @@ export function ParcoursManagement() {
               <SelectContent>
                 <SelectItem value="all">Toutes mentions</SelectItem>
                 {mentions.map((mention) => (
-                  <SelectItem key={mention.id_mention} value={mention.id_mention?.toString()||""}>
-                    {mention.nom_mention} {mention.abbreviation}
+                  <SelectItem key={mention.IdMention} value={mention.IdMention?.toString()||""}>
+                    {mention.NomMention} {mention.Abbreviation}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -412,24 +412,24 @@ export function ParcoursManagement() {
               <Label htmlFor="edit-nom">Nom du parcours *</Label>
               <Input
                 id="edit-nom"
-                value={formData.nom_parcours}
-                onChange={(e) => setFormData({ ...formData, nom_parcours: e.target.value })}
+                value={formData.NomParcours}
+                onChange={(e) => setFormData({ ...formData, NomParcours: e.target.value })}
                 placeholder="Ex: Génie Logiciel"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-mention">Mention *</Label>
               <Select
-                value={formData.id_mention}
-                onValueChange={(value) => setFormData({ ...formData, id_mention: value })}
+                value={formData.IdMention}
+                onValueChange={(value) => setFormData({ ...formData, IdMention: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner une mention" />
                 </SelectTrigger>
                 <SelectContent>
                   {mentions.map((mention) => (
-                    <SelectItem key={mention.id_mention} value={mention.id_mention?.toString()||""}>
-                      {mention.nom_mention} ({mention.abbreviation})
+                    <SelectItem key={mention.IdMention} value={mention.IdMention?.toString()||""}>
+                      {mention.NomMention} ({mention.Abbreviation})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -439,8 +439,8 @@ export function ParcoursManagement() {
               <div className="grid gap-2">
                 <Label htmlFor="edit-niveau">Niveau *</Label>
                 <Select
-                  value={formData.niveau_parcours}
-                  onValueChange={(value) => setFormData({ ...formData, niveau_parcours: value as NiveauEnum })}
+                  value={formData.NiveauParcours}
+                  onValueChange={(value) => setFormData({ ...formData, NiveauParcours: value as NiveauEnum })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Niveau" />
@@ -457,8 +457,8 @@ export function ParcoursManagement() {
               <div className="grid gap-2">
                 <Label htmlFor="edit-formation">Formation *</Label>
                 <Select
-                  value={formData.formation_type}
-                  onValueChange={(value) => setFormData({ ...formData, formation_type: value as FormationEnum })}
+                  value={formData.Formation}
+                  onValueChange={(value) => setFormData({ ...formData, Formation: value as FormationEnum })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Type" />
@@ -477,8 +477,8 @@ export function ParcoursManagement() {
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
                 id="edit-description"
-                value={formData.description_parcours}
-                onChange={(e) => setFormData({ ...formData, description_parcours: e.target.value })}
+                value={formData.DescriptionParcours}
+                onChange={(e) => setFormData({ ...formData, DescriptionParcours: e.target.value })}
                 placeholder="Description du parcours..."
               />
             </div>

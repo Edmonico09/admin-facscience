@@ -38,30 +38,32 @@ export function MentionManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingMention, setEditingMention] = useState<Mention | null>(null)
-  const [formData, setFormData] = useState({
-    nom_mention: "",
-    description_mention: "",
-    abbreviation: "",
+  const [formData, setFormData] = useState<Mention>({
+    NomMention: "",
+    DescriptionMention: "",
+    Abbreviation: "",
+    LogoPath:null,    
   })
   const { toast } = useToast()
 
   const filteredMentions = mentions.filter(
     (mention) =>
-      mention.nom_mention.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mention.abbreviation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mention.description_mention?.toLowerCase().includes(searchTerm.toLowerCase()),
+      mention.NomMention.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mention.Abbreviation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mention.DescriptionMention?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const resetForm = () => {
     setFormData({
-      nom_mention: "",
-      description_mention: "",
-      abbreviation: "",
+      NomMention: "",
+      DescriptionMention: "",
+      Abbreviation: "",
+      LogoPath:null,    
     })
   }
 
   const handleAdd = async () => {
-    if (!formData.nom_mention || !formData.abbreviation || !formData.description_mention) {
+    if (!formData.NomMention || !formData.Abbreviation || !formData.DescriptionMention) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -71,9 +73,10 @@ export function MentionManagement() {
     }
 
     const newMention: Mention = {
-      nom_mention: formData.nom_mention,
-      description_mention: formData.description_mention,
-      abbreviation: formData.abbreviation.toUpperCase(),
+      NomMention: formData.NomMention,
+      DescriptionMention: formData.DescriptionMention,
+      Abbreviation: formData.Abbreviation.toUpperCase(),
+      LogoPath: formData.LogoPath,
     }
 
     await createMention(newMention)
@@ -88,15 +91,16 @@ export function MentionManagement() {
   const handleEdit = (mention: Mention) => {
     setEditingMention(mention)
     setFormData({
-      nom_mention: mention.nom_mention,
-      description_mention: mention.description_mention||"",
-      abbreviation: mention.abbreviation,
+      NomMention: mention.NomMention,
+      DescriptionMention: mention.DescriptionMention||"",
+      Abbreviation: mention.Abbreviation,
+      LogoPath:mention.LogoPath||null,
     })
     setIsEditDialogOpen(true)
   }
 
   const handleUpdate = async() => {
-    if (!formData.nom_mention || !formData.abbreviation || !formData.description_mention || !editingMention) {
+    if (!formData.NomMention || !formData.Abbreviation || !formData.DescriptionMention || !editingMention) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -105,7 +109,7 @@ export function MentionManagement() {
       return
     }
 
-    await updateMention(editingMention.id_mention||0, formData)
+    await updateMention(editingMention.IdMention||0, formData)
     setIsEditDialogOpen(false)
     setEditingMention(null)
     resetForm()
@@ -165,17 +169,17 @@ export function MentionManagement() {
                     <Label htmlFor="nom">Nom de la mention *</Label>
                     <Input
                       id="nom"
-                      value={formData.nom_mention}
-                      onChange={(e) => setFormData({ ...formData, nom_mention: e.target.value })}
+                      value={formData.NomMention}
+                      onChange={(e) => setFormData({ ...formData, NomMention: e.target.value })}
                       placeholder="Ex: Informatique"
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="abbreviation">Abbreviation *</Label>
+                    <Label htmlFor="Abbreviation">Abbreviation *</Label>
                     <Input
-                      id="abbreviation"
-                      value={formData.abbreviation}
-                      onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
+                      id="Abbreviation"
+                      value={formData.Abbreviation}
+                      onChange={(e) => setFormData({ ...formData, Abbreviation: e.target.value })}
                       placeholder="Ex: INFO"
                     />
                   </div>
@@ -183,12 +187,27 @@ export function MentionManagement() {
                     <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
-                      value={formData.description_mention}
-                      onChange={(e) => setFormData({ ...formData, description_mention: e.target.value })}
+                      value={formData.DescriptionMention}
+                      onChange={(e) => setFormData({ ...formData, DescriptionMention: e.target.value })}
                       placeholder="Description de la mention..."
                     />
                   </div>
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="image">Image</Label>
+                  <input
+                    type="file"
+                    id="image"
+                    accept="image/*"
+                    onChange={(e) =>{
+                      if (e.target.files && e.target.files[0]) 
+                        setFormData({ ...formData, LogoPath: e.target.files[0] })
+                      }
+                    }
+                    className="border rounded-md p-2"
+                  />
+                </div>
+
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                     Annuler
@@ -219,7 +238,8 @@ export function MentionManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>abbreviation</TableHead>
+                  <TableHead>Logo</TableHead>
+                  <TableHead>Abbreviation</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -227,15 +247,31 @@ export function MentionManagement() {
               </TableHeader>
               <TableBody>
                 {filteredMentions.map((mention) => (
-                  <TableRow key={mention.id_mention}>
-                    <TableCell className="font-medium">{mention.abbreviation}</TableCell>
+                  <TableRow key={mention.IdMention}>
+                    <TableCell>
+                      {
+                        mention.LogoPath &&
+                      <img
+                        src={
+                          mention.LogoPath
+                            ? typeof mention.LogoPath === "string"
+                              ? mention.LogoPath
+                              : mention.LogoPath.name
+                            : ""
+                        }
+                        alt="Logo de la mention"
+                        className="w-24 h-24 object-cover rounded-md"
+                      />
+                    }
+                    </TableCell>
+                    <TableCell className="font-medium">{mention.Abbreviation}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{mention.nom_mention}</div>
-                        <div className="text-sm text-muted-foreground truncate max-w-xs">{mention.description_mention}</div>
+                        <div className="font-medium">{mention.NomMention}</div>
+                        <div className="text-sm text-muted-foreground truncate max-w-xs">{mention.DescriptionMention}</div>
                       </div>
                     </TableCell>
-                    <TableCell>{mention.description_mention}</TableCell>
+                    <TableCell>{mention.DescriptionMention}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEdit(mention)}>
@@ -251,14 +287,14 @@ export function MentionManagement() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Êtes-vous sûr de vouloir supprimer la mention "{mention.nom_mention}" ? Cette action est
+                                Êtes-vous sûr de vouloir supprimer la mention "{mention.NomMention}" ? Cette action est
                                 irréversible.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Annuler</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(mention.id_mention||0)}
+                                onClick={() => handleDelete(mention.IdMention||0)}
                                 className="bg-destructive hover:bg-destructive/90"
                               >
                                 Supprimer
@@ -277,23 +313,23 @@ export function MentionManagement() {
           {/* Version Mobile - Cards */}
           <div className="lg:hidden space-y-4">
             {filteredMentions.map((mention) => (
-              <div key={mention.id_mention} className="bg-card border rounded-lg p-4 shadow-sm">
-                {/* Header de la carte avec abbreviation et statut */}
+              <div key={mention.IdMention} className="bg-card border rounded-lg p-4 shadow-sm">
+                {/* Header de la carte avec Abbreviation et statut */}
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
                     <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">
-                      {mention.abbreviation}
+                      {mention.Abbreviation}
                     </span>
                     {/* {getStatusBadge(mention.statut)} */}
                   </div>
                 </div>
                 
-                {/* nom_mention et description */}
+                {/* NomMention et description */}
                 <div className="mb-4">
-                  <h3 className="font-semibold text-base mb-1">{mention.nom_mention}</h3>
-                  {mention.description_mention && (
+                  <h3 className="font-semibold text-base mb-1">{mention.NomMention}</h3>
+                  {mention.DescriptionMention && (
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {mention.description_mention}
+                      {mention.DescriptionMention}
                     </p>
                   )}
                 </div>
@@ -301,8 +337,8 @@ export function MentionManagement() {
                 {/* Informations principales */}
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">description_mention:</span>
-                    <span className="text-sm font-medium">{mention.description_mention}</span>
+                    <span className="text-sm text-muted-foreground">DescriptionMention:</span>
+                    <span className="text-sm font-medium">{mention.DescriptionMention}</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
@@ -338,14 +374,14 @@ export function MentionManagement() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Êtes-vous sûr de vouloir supprimer la mention "{mention.nom_mention}" ? Cette action est
+                          Êtes-vous sûr de vouloir supprimer la mention "{mention.NomMention}" ? Cette action est
                           irréversible.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter className="flex-col lg:flex-row gap-2">
                         <AlertDialogCancel className="w-full lg:w-auto">Annuler</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleDelete(mention.id_mention||0)}
+                          onClick={() => handleDelete(mention.IdMention||0)}
                           className="bg-destructive hover:bg-destructive/90 w-full lg:w-auto"
                         >
                           Supprimer
@@ -381,17 +417,17 @@ export function MentionManagement() {
               <Label htmlFor="edit-nom">Nom de la mention *</Label>
               <Input
                 id="edit-nom"
-                value={formData.nom_mention}
-                onChange={(e) => setFormData({ ...formData, nom_mention: e.target.value })}
+                value={formData.NomMention}
+                onChange={(e) => setFormData({ ...formData, NomMention: e.target.value })}
                 placeholder="Ex: Informatique"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-abbreviation">Abbreviation *</Label>
+              <Label htmlFor="edit-Abbreviation">Abbreviation *</Label>
               <Input
-                id="edit-abbreviation"
-                value={formData.abbreviation}
-                onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
+                id="edit-Abbreviation"
+                value={formData.Abbreviation}
+                onChange={(e) => setFormData({ ...formData, Abbreviation: e.target.value })}
                 placeholder="Ex: INFO"
               />
             </div>
@@ -399,11 +435,33 @@ export function MentionManagement() {
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
                 id="edit-description"
-                value={formData.description_mention}
-                onChange={(e) => setFormData({ ...formData, description_mention: e.target.value })}
-                placeholder="description_mention de la mention..."
+                value={formData.DescriptionMention}
+                onChange={(e) => setFormData({ ...formData, DescriptionMention: e.target.value })}
+                placeholder="DescriptionMention de la mention..."
               />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="image">Logo</Label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                value={
+                  formData.LogoPath
+                    ? typeof formData.LogoPath === "string"
+                      ? formData.LogoPath
+                      : formData.LogoPath.name
+                    : ""
+                }
+                onChange={(e) =>{
+                  if (e.target.files && e.target.files[0]) 
+                    setFormData({ ...formData, LogoPath: e.target.files[0] })
+                  }
+                }
+                className="border rounded-md p-2"
+              />
+            </div>
+
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>

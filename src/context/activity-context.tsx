@@ -12,7 +12,7 @@ interface ActivityContextType {
 export const ActivityContext = createContext<ActivityContextType | undefined>(undefined)
 
 export const ActivityProvider = ({ children }: { children: ReactNode }) => {
-  const [activities, setActivities] = useState<ActivityItem[]>(recentActivities)
+  const [activities, setActivities] = useState<ActivityItem[]>(recentActivities);
 
   const addActivity = (activity: ActivityItem) => {
     setActivities((prev) => [...prev, activity])

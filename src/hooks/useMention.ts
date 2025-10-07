@@ -59,7 +59,7 @@ export function useMention() {
   
       // Remplace la mention mise à jour dans la liste
       setMentions(prev =>
-        prev.map(m => (m.id_mention === id_ ? data : m))
+        prev.map(m => (m.IdMention === id_ ? data : m))
       );
     } catch (err: any) {
       setError(err.message || "Erreur lors de la mise à jour de la mention");
@@ -84,7 +84,7 @@ export function useMention() {
       addActivity(activity);
   
       // Supprime localement la mention du state
-      setMentions(prev => prev.filter(m => m.id_mention !== id_));
+      setMentions(prev => prev.filter(m => m.IdMention !== id_));
     } catch (err: any) {
       setError(err.message || "Erreur lors de la suppression de la mention");
     } finally {

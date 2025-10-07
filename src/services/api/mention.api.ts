@@ -4,7 +4,7 @@ import { Mention } from "../types/mention";
 
 export const get = async () => {
   try {
-    // const response = await fetch(`${baseURL}/mentions`, {
+    // const response = await fetch(`${baseURL}/Mention`, {
     //   method: 'GET',
     //   headers: {
     //     'Content-Type': 'application/json'
@@ -26,7 +26,7 @@ export const get = async () => {
 
 export const create = async (newMention: Mention) => {
   try {
-    // const response = await fetch(`${baseURL}/mention`, {
+    // const response = await fetch(`${baseURL}/Mention`, {
     //   method: 'POST',
     //   headers: {
     //     'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ export const create = async (newMention: Mention) => {
 
 export const update = async (id_:number, updateMention: Partial<Mention>) => {
   try {
-    // const response = await fetch(`${baseURL}/mention/${id_}`, {
+    // const response = await fetch(`${baseURL}/Mention/${id_}`, {
     //   method: 'PATCH',
     //   headers: {
     //     'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ export const update = async (id_:number, updateMention: Partial<Mention>) => {
 
 export const remove = async (id_:number) => {
   try {
-    // const response = await fetch(`${baseURL}/mention/${id_}`, {
+    // const response = await fetch(`${baseURL}/Mention/${id_}`, {
     //   method: 'DELETE',
     //   headers: {
     //     'Content-Type': 'application/json'

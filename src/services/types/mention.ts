@@ -1,6 +1,7 @@
 export interface Mention {
-  id_mention?: number;          
-  nom_mention: string;        
-  abbreviation: string;        
-  description_mention?: string;
+  IdMention?: number;          
+  NomMention: string;        
+  Abbreviation: string;        
+  DescriptionMention?: string;
+  LogoPath?: string|File|null;
 }
