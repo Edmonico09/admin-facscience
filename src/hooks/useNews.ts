@@ -19,14 +19,18 @@ export function useNews(){
             getNews(),
             getCategory(),
           ]);
+
+        console.log('ON the HOOKS >>>>> ', JSON.stringify(newsData, null, 2))
+          
           setNews(newsData);
           setCategories(categoriesData);
+
         } catch (err: any) {
           setError(err.message || "Erreur lors du chargement des données");
         } finally {
           setLoading(false);
         }
-        setNews(upcomingEvents)
+        // setNews(upcomingEvents)
       }, []);
 
 
@@ -76,7 +80,7 @@ export function useNews(){
         setNews((prev) =>
         prev.map((item) =>
             item.idActualite === idActualite
-            ? { ...item, medias: item.medias?.filter((m) => m.idMedia !== mediaId) || [] }
+            ? { ...item, medias: item.medias?.filter((m) => m.id !== mediaId) || [] }
             : item
         )
         );

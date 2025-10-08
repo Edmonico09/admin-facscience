@@ -20,8 +20,8 @@ export interface Category {
 }
 
 export interface Media {
-  idMedia? : number,
-  chemin:string,
-  mimetype:string,
-  media:string
+  id? : number,
+  url:string,
+  type:string,
+  // media:string
 }

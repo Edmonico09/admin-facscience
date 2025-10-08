@@ -31,6 +31,7 @@ import { Plus, Search, Edit, Trash2, GraduationCap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
 import { Mention } from "@/services/types/mention"
 import { useMention } from "@/hooks/useMention"
+import RichTextEditor from "./rich-text-editor"
 
 export function MentionManagement() {
   const {mentions, createMention, updateMention, removeMention} = useMention();
@@ -146,7 +147,7 @@ export function MentionManagement() {
               Liste des Mentions
             </CardTitle>
 
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
@@ -198,7 +199,59 @@ export function MentionManagement() {
                   </Button>
                 </DialogFooter>
               </DialogContent>
-            </Dialog>
+            </Dialog> */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
+                <Plus className="h-4 w-4 mr-2" />
+                <div className="hidden md:block">Ajouter une Mention</div>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Ajouter une Nouvelle Mention</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations pour créer une nouvelle mention académique.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="nom">Nom de la mention *</Label>
+                  <Input
+                    id="nom"
+                    value={formData.nomMention}
+                    onChange={(e) => setFormData({ ...formData, nomMention: e.target.value })}
+                    placeholder="Ex: Informatique"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="abbreviation">Abbreviation *</Label>
+                  <Input
+                    id="abbreviation"
+                    value={formData.abbreviation}
+                    onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
+                    placeholder="Ex: INFO"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Description</Label>
+                  <RichTextEditor
+                    value={formData.descriptionMention}
+                    onChange={(html: string) => setFormData({ ...formData, descriptionMention: html })}
+                    placeholder="Description de la mention..."
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Annuler
+                </Button>
+                <Button onClick={handleAdd} className="bg-university-primary hover:bg-university-primary/90">
+                  Ajouter
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           </div>
         </CardHeader>
         <CardContent>
