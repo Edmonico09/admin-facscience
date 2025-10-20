@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -456,6 +456,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                           <SelectValue placeholder="Sélectionner une catégorie" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectGroup>
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id.toString()}>
                               <div className="flex items-center gap-2">
@@ -464,6 +465,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                               </div>
                             </SelectItem>
                           ))}
+                          </SelectGroup>
                         </SelectContent>
                       </Select>
                     </div>
