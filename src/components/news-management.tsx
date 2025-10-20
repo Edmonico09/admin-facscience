@@ -39,6 +39,7 @@ import { useNews } from "@/hooks/useNews"
 export function NewsManagement() {
 
   const {news, categories,createCategories , createMedias, removeMedia , createActualite , updateActus , removeNews , changeStatus} = useNews();
+  console.log("Actualities list: ", JSON.stringify(news, null, 2))
   
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
@@ -146,7 +147,7 @@ export function NewsManagement() {
 
     setFormData({
       ...formData,
-      medias: formData.medias.filter((m) => m.idMedia !== mediaId),
+      medias: formData.medias.filter((m) => m.id !== mediaId),
     });
 
     toast({
@@ -542,10 +543,10 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         {formData.medias.length > 0 && (
                           <div className="grid grid-cols-2 gap-2">
                             {formData.medias.map((media) => (
-                              <div key={media.idMedia} className="relative border rounded-lg p-2">
+                              <div key={media.id} className="relative border rounded-lg p-2">
                                 <img
-                                  src={media.chemin || "/placeholder.svg"}
-                                  alt={media.media}
+                                  src={media.url || "/placeholder.svg"}
+                                  alt={media.url}
                                   className="w-full h-20 object-cover rounded"
                                 />
                                 <Button
@@ -554,14 +555,14 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                                   size="sm"
                                   className="absolute top-1 right-1 h-6 w-6 p-0"
                                   onClick={() => {
-                                    if (media.idMedia !== undefined) {
-                                      handleRemoveMedia(media.idMedia)
+                                    if (media.id !== undefined) {
+                                      handleRemoveMedia(media.id)
                                     }
                                   }}
                                 >
                                   <X className="h-3 w-3" />
                                 </Button>
-                                <p className="text-xs text-muted-foreground mt-1 truncate">{media.media}</p>
+                                <p className="text-xs text-muted-foreground mt-1 truncate">{media.url}</p>
                               </div>
                             ))}
                           </div>
@@ -656,7 +657,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       <CardContent className="space-y-3">
                         {n.medias.length > 0 && (
                           <img
-                            src={n.medias[0].chemin || "/placeholder.svg"}
+                            src={n.medias[0].url || "/placeholder.svg"}
                             alt={n.titre}
                             className="w-full h-32 object-cover rounded-md"
                           />
@@ -843,6 +844,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-categorie">Catégorie *</Label>
+              
               <Select
                 value={formData.categorie}
                 onValueChange={(value) => setFormData({ ...formData, categorie: value })}
@@ -935,10 +937,10 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 {formData.medias.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
                     {formData.medias.map((media) => (
-                      <div key={media.idMedia} className="relative border rounded-lg p-2">
+                      <div key={media.id} className="relative border rounded-lg p-2">
                         <img
-                          src={media.chemin || "/placeholder.svg"}
-                          alt={media.media}
+                          src={media.url || "/placeholder.svg"}
+                          alt={media.url}
                           className="w-full h-20 object-cover rounded"
                         />
                         <Button
@@ -946,11 +948,11 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                           variant="destructive"
                           size="sm"
                           className="absolute top-1 right-1 h-6 w-6 p-0"
-                          onClick={() => handleRemoveMedia(media.idMedia!)}
+                          onClick={() => handleRemoveMedia(media.id!)}
                         >
                           <X className="h-3 w-3" />
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-1 truncate">{media.chemin}</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{media.url}</p>
                       </div>
                     ))}
                   </div>

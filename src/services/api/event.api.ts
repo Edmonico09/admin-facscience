@@ -4,19 +4,21 @@ import { Actualite, Category, Media } from "../types/event";
 
 export const getClosestEvent = async () => {
   try {
-    // const response = await fetch(`${baseURL}/recent_events`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   }
-    // });
+    const response = await fetch(`${baseURL}/api/Actualite/actualities`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
-    // if (!response.ok) {
-    //   throw new Error(`Erreur HTTP : ${response.status}`);
-    // }
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP : ${response.status}`);
+    }
 
-    // const data: Actualite[] = await response.json();
-    // return data;
+    const data: Actualite[] = await response.json();
+    console.log('Données reçues du serveur :', JSON.stringify(data, null, 2));
+    return data;
+
     return upcomingEvents;
   } catch (error) {
     console.error('Erreur lors du POST :', error);
@@ -28,7 +30,7 @@ export const getClosestEvent = async () => {
 export async function createCategory(name : string) {
     try {
 
-        const response = await fetch(`${baseURL}/envent/category/add/`, {
+        const response = await fetch(`${baseURL}/api/Actualite/category/add/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(name),
@@ -64,7 +66,7 @@ export async function createCategory(name : string) {
 export async function getCategory(): Promise<Category[]> {
     try {
 
-        const res = await fetch(`${baseURL}/envent/category/list/`);
+        const res = await fetch(`${baseURL}/api/Actualite/actualities`);
         if (!res.ok) throw new Error(`Erreur lors de la récupération des category`);
         const data = await res.json();
         return data;
@@ -93,7 +95,7 @@ export async function getCategory(): Promise<Category[]> {
 export async function deleteCategory(id : number){
     try {
 
-        const response = await fetch(`${baseURL}/envent/category/delete/${id}`);
+        const response = await fetch(`${baseURL}/api/Actualite/category/delete/${id}`);
         
         if(!response.ok){
             throw new Error(`Erreur HTTP lors de la suppression de category`);
@@ -126,7 +128,7 @@ export async function createNews(data : Actualite) {
 
     try {
 
-        const response = await fetch(`${baseURL}/envent/add/`, {
+        const response = await fetch(`${baseURL}/api/Actualite/add/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -161,7 +163,7 @@ export async function createNews(data : Actualite) {
 export async function UpdateNews(data : Actualite) {
     try {
 
-        const response = await fetch(`${baseURL}/envent/update/`, {
+        const response = await fetch(`${baseURL}/api/Actualite/update/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -197,13 +199,45 @@ export async function UpdateNews(data : Actualite) {
 export async function getNews():  Promise<Actualite[]>{
     try {
 
-        const response = await fetch(`${baseURL}/envent/list/`);
+        const response = await fetch(`${baseURL}/api/Actualite/actualities`);
         
         if(!response.ok){
             throw new Error(`Erreur HTTP lors de la récupération d'actualités: ${response.status}`);
         }
+
+        const result = await response.json();
+
+        const data: Actualite[] = result.map((actus: {
+          id: number;
+          title: string;
+          description: string;
+          category: string;
+          isUrgent: boolean;
+          location?: string;
+          status: string;
+          media: Media[];
+          createdAt: Date;
+          updatedAt: Date;
+          postedAt: Date;
+          beginedAt?: Date;
+          finishAt?: Date;
+          content: string;
+        }) => ({
+          idActualite: actus.id,
+          titre: actus.title,
+          description: actus.description,
+          categorie: actus.category,
+          contenu: actus.content,
+          lieu: actus.location,
+          statut: actus.isUrgent ? "urgent" : "not urgent",
+          medias: actus.media,
+          dateCreation: actus.createdAt,
+          dateCommencement: actus.beginedAt,
+          dateFin: actus.finishAt,
+        }));
     
-        return response.json();
+        console.log('ON the API >>>>> ', JSON.stringify(data, null, 2))
+        return data;
     }catch (error) {
     // Si c'est une erreur de réseau ou de parsing JSON
     if (error instanceof TypeError) {
@@ -229,7 +263,7 @@ export async function getNews():  Promise<Actualite[]>{
 export async function deleteNews(id : number){
     try {
 
-        const response = await fetch(`${baseURL}/envent/delete/${id}`);
+        const response = await fetch(`${baseURL}/api/Actualite/delete/${id}`);
         
         if(!response.ok){
             throw new Error(`Erreur HTTP lors de la suppression  d' actualités: ${response.status}`);
@@ -265,7 +299,7 @@ export async function createMedia(idActualite : number , data : File){
 
         const formData = new FormData();
         formData.append(`file` , data);
-        const response = await fetch(`${baseURL}/envent/media/add/${idActualite}` , {
+        const response = await fetch(`${baseURL}/api/Actualite/media/add/${idActualite}` , {
           method: "POST",
         //   headers: { "Content-Type": "multipart/form-data" },
             body: formData,
@@ -301,7 +335,7 @@ export async function createMedia(idActualite : number , data : File){
 export async function deleteMedia(idActualite : number , id_media: number ){
     try {
 
-        const response = await fetch(`${baseURL}/envent/media/delete/${idActualite}/${id_media}`);
+        const response = await fetch(`${baseURL}/api/Actualite/media/delete/${idActualite}/${id_media}`);
         
         if(!response.ok){
             throw new Error(`Erreur HTTP lors de la suppression  de mdeias de l'actualités: ${response.status}`);
@@ -337,7 +371,7 @@ export async function updateStatus(idActualite : number , statut : string) : Pro
             const data = {
                 "statut" : statut
             }
-        const response = await fetch(`${baseURL}/envent/statut/update/${idActualite}`, {
+        const response = await fetch(`${baseURL}/api/Actualite/statut/update/${idActualite}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),

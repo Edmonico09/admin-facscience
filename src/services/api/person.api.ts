@@ -20,13 +20,13 @@ function getCreateUrl(type : string){
 function getListUrl(type : string){
     switch (type) {
         case "pat":
-          return `${baseURL}/person/list/pat`;
+          return `${baseURL}/Personne`;
         case "professeur":
-          return `${baseURL}/person/list/professeur`;
+          return `${baseURL}/Personne`;
         case "cofac":
-          return `${baseURL}/person/list/cofac`;
+          return `${baseURL}/Personne`;
         case "doyen_et_vice":
-          return `${baseURL}/person/list/doyen`;
+          return `${baseURL}/Personne`;
         default:
           throw new Error("Type inconnu : " + type);
       }
