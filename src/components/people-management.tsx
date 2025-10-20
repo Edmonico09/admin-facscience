@@ -29,12 +29,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Users, Mail, Phone, User, UserIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { BasePerson, Person, PersonType } from "@/services/types/person"
+import { BasePerson, COFAC, doyenEtVice, PAT, Person, PersonType, Professeur } from "@/services/types/person"
 // import { createOptions, getSelectOptions } from "@/services/api/option.api"
 import { options } from "@/services/types/option"
-import { usePeople } from "@/hooks/usePerson"
+import { useImageFallback, usePeople } from "@/hooks/usePerson"
+
 
 
 const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>> = {
@@ -55,10 +56,13 @@ const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>>
 };
 
 export function PeopleManagement() {
+
+  
   const [activeTab, setActiveTab] = useState<PersonType>("pat")
   const { people, selectOptions, createOpt, createNewPerson , updatePersons , removePerson } = usePeople(activeTab);
   const [addOptionType, setAddOptionType] = useState<keyof options>("postAffectations")
   
+  const { error, handleError, src } = useImageFallback()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -121,6 +125,7 @@ export function PeopleManagement() {
     }
   
       await createOpt(addOptionType, { nom: newOptionValue.trim() });
+      await createOpt(addOptionType, { nom: newOptionValue.trim() });
   
   
       setNewOptionValue("");
@@ -129,6 +134,7 @@ export function PeopleManagement() {
         title: "Succès",
         description: "Option ajoutée avec succès",
       });
+
 
   };
 
@@ -166,6 +172,7 @@ export function PeopleManagement() {
 
     // Appel API générique
     await createNewPerson(personData);
+    await createNewPerson(personData);
 
     // Mettre à jour l'état
     setIsAddDialogOpen(false);
@@ -175,6 +182,7 @@ export function PeopleManagement() {
       title: "Succès",
       description: "Personne ajoutée avec succès",
     });
+
 
 };
 
@@ -294,6 +302,8 @@ const handleEdit = (person: Person) => {
       // Appel API pour mettre à jour
       await updatePersons(personToUpdate);
   
+
+  
       setIsEditDialogOpen(false);
       setEditingPerson(null);
       resetForm();
@@ -315,7 +325,8 @@ const handleEdit = (person: Person) => {
     try {
       // Appel à l'API pour supprimer la personne
       await removePerson(person);
-
+  
+  
       toast({
         title: "Succès",
         description: `Personne "${person.prenom} ${person.nom}" supprimée avec succès`,
@@ -692,7 +703,7 @@ const handleEdit = (person: Person) => {
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="doyen_et_vice" className="flex items-center gap-2">
-                Tête
+                Decanat
                 <Badge variant="secondary" className="text-xs">
                   {tabCounts.doyen_et_vice}
                 </Badge>
@@ -716,6 +727,8 @@ const handleEdit = (person: Person) => {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                        <TableHead>Image</TableHead>
+
                           <TableHead>Nom</TableHead>
                           <TableHead>Contact</TableHead>
                           <TableHead>Type</TableHead>
@@ -727,6 +740,21 @@ const handleEdit = (person: Person) => {
                       <TableBody>
                         {filteredPeople.map((person) => (
                           <TableRow key={person.id}>
+
+                              <TableCell>
+                                    <div className="flex items-center">
+                                      {!error ? (
+                                        <img
+                                          src={src(`/images/${person.id}.jpg`)}
+                                          alt={`${person.prenom} ${person.nom}`}
+                                          className="w-10 h-10 rounded-full object-cover"
+                                          onError={handleError}
+                                        />
+                                      ) : (
+                                        <UserIcon className="w-10 h-10 text-gray-400" />
+                                      )}
+                                    </div>
+                                  </TableCell>
                             <TableCell>
                               <div>
                                 <div className="font-medium">

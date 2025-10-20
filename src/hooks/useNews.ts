@@ -1,5 +1,4 @@
 import { createCategory, createMedia, createNews, deleteMedia, deleteNews, getCategory, getNews, UpdateNews, updateStatus } from "@/services/api/event.api";
-import { upcomingEvents } from "@/services/mocked-data";
 import { Actualite, Category } from "@/services/types/event";
 import { useState, useEffect, useCallback } from "react";
 
