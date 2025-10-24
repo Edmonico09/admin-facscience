@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,6 +39,15 @@ import { useParcours } from "@/hooks/useParcours"
 
 export function ParcoursManagement() {
  const { parcours, createParcours, updateParcours, removeParcours } = useParcours()
+  const mappedParcours = parcours.map(p => ({
+  id_parcours: p.idParcours,
+  nom_parcours: p.nomParcours,
+  id_mention: p.idMention,
+  niveau_parcours: p.niveauParcours,
+  formation_type: p.formation,
+  description_parcours: p.descriptionParcours,
+}))
+
   const { mentions } = useMention()
   const { toast } = useToast()
 
@@ -129,28 +138,49 @@ export function ParcoursManagement() {
   }
 
   // Filtrage
-  const filteredParcours = parcours.filter((p:Parcours) => {
-    const matchesSearch = p.nom_parcours.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentions.find((m) => m.id_mention === p.id_mention)?.nom_mention.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesMention = selectedMention === "all" || p.id_mention.toString() === selectedMention
-    const matchesNiveau = selectedNiveau === "all" || p.niveau_parcours === selectedNiveau
-    const matchesFormation = selectedFormation === "all" || p.formation_type === selectedFormation
-    return matchesSearch && matchesMention && matchesNiveau && matchesFormation
-  })
+  const filteredParcours = mappedParcours.filter((p: Parcours) => {
+    const parcoursName = p.nom_parcours ?? "";
+    const mentionName = mentions.find(m => m.id_mention === p.id_mention)?.nom_mention ?? "";
 
-  const getParcoursGroupedByMention = () => {
-    const grouped: { [key: number]: { mention: Mention; parcours: Parcours[] } } = {}
-    filteredParcours.forEach((p:Parcours) => {
-      const mention = mentions.find((m) => m.id_mention === p.id_mention)
-      if (mention) {
-        if (!grouped[mention.id_mention||0]) grouped[mention.id_mention||0] = { mention, parcours: [] }
-        grouped[mention.id_mention||0].parcours.push(p)
+    const matchesSearch =
+      parcoursName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mentionName.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesMention = selectedMention === "all" || p.id_mention?.toString() === selectedMention;
+    const matchesNiveau = selectedNiveau === "all" || p.niveau_parcours === selectedNiveau;
+    const matchesFormation = selectedFormation === "all" || p.formation_type === selectedFormation;
+
+    return matchesSearch && matchesMention && matchesNiveau && matchesFormation;
+  });
+
+
+  const normalizedMentions = useMemo(() => 
+    mentions.map(m => ({
+      id_mention: m.idMention ?? m.id_mention,
+      nom_mention: m.nomMention ?? m.nom_mention,
+      abbreviation: m.abbreviation ?? m.abreviation ?? "",
+    })), 
+  [mentions]);
+
+  const groupedParcours = useMemo(() => {
+    if (!normalizedMentions.length) return [];
+
+    const grouped: { [key: number]: { mention: Mention; parcours: typeof mappedParcours } } = {};
+
+    filteredParcours.forEach((p) => {
+      const mention = normalizedMentions.find((m) => m.id_mention === p.id_mention);
+      if (!mention) return;
+
+      if (!grouped[mention.id_mention]) {
+        grouped[mention.id_mention] = { mention, parcours: [] };
       }
-    })
-    return Object.values(grouped)
-  }
+      grouped[mention.id_mention].parcours.push(p);
+    });
 
-  const groupedParcours = getParcoursGroupedByMention()
+    return Object.values(grouped);
+  }, [filteredParcours, normalizedMentions]);
+
+
 
   const getNiveauBadgeColor = (niveau: NiveauEnum) => { 
     if (niveau.startsWith("L")) 
@@ -201,6 +231,7 @@ export function ParcoursManagement() {
                   <div className="hidden md:block">Ajouter un Parcours</div>
                 </Button>
               </DialogTrigger>
+
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Ajouter un Nouveau Parcours</DialogTitle>
@@ -208,6 +239,7 @@ export function ParcoursManagement() {
                     Remplissez les informations pour créer un nouveau parcours académique.
                   </DialogDescription>
                 </DialogHeader>
+
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="nom">Nom du parcours *</Label>
@@ -218,6 +250,7 @@ export function ParcoursManagement() {
                       placeholder="Ex: Génie Logiciel"
                     />
                   </div>
+
                   <div className="grid gap-2">
                     <Label htmlFor="mention">Mention *</Label>
                     <Select
@@ -229,7 +262,7 @@ export function ParcoursManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         {mentions
-                          .filter((mention) => mention.id_mention !== undefined && mention.id_mention !== null)
+                          .filter((mention) => mention.id_mention != null)
                           .map((mention) => (
                             <SelectItem key={mention.id_mention} value={String(mention.id_mention)}>
                               {mention.nom_mention} ({mention.abbreviation})
@@ -238,6 +271,7 @@ export function ParcoursManagement() {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="niveau">Niveau *</Label>
@@ -257,6 +291,7 @@ export function ParcoursManagement() {
                         </SelectContent>
                       </Select>
                     </div>
+
                     <div className="grid gap-2">
                       <Label htmlFor="formation">Formation *</Label>
                       <Select
@@ -276,6 +311,7 @@ export function ParcoursManagement() {
                       </Select>
                     </div>
                   </div>
+
                   <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea
@@ -286,6 +322,7 @@ export function ParcoursManagement() {
                     />
                   </div>
                 </div>
+
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                     Annuler
@@ -296,6 +333,7 @@ export function ParcoursManagement() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
           </div>
         </CardHeader>
 

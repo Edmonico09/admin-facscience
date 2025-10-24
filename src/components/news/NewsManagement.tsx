@@ -9,10 +9,10 @@ import { Plus, Newspaper, Tag } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Actualite } from "@/services/types/event"
 import { useNews } from "@/hooks/useNews"
-import { NewsCard } from "./news/NewsCard"
-import { NewsFilters } from "./news/NewsFilters"
-import { NewsFormDialog } from "./news/NewsFormDialog"
-import { CategoryDialog } from "./news/CategoryDialog"
+import { NewsCard } from "./NewsCard"
+import { NewsFilters } from "./NewsFilters"
+import { NewsFormDialog } from "./NewsFormDialog"
+import { CategoryDialog } from "./CategoryDialog"
 
 export function NewsManagement() {
   const { news, categories, createCategories, createMedias, removeMedia, createActualite, updateActus, removeNews, changeStatus } = useNews()

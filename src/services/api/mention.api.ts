@@ -24,25 +24,34 @@ export const get = async (): Promise<Mention[]> => {
 
 export const create = async (newMention: Omit<Mention, "idMention">): Promise<Mention> => {
   try {
+    const payload = {
+      NomMention: newMention.nomMention,
+      Abbreviation: newMention.abbreviation,
+      DescriptionMention: newMention.descriptionMention,
+      LogoPath: newMention.logoPath,
+      Laboratoires: newMention.laboratoires,
+      MentionNiveauParcours: newMention.mentionNiveauParcours,
+      Preinscriptions: newMention.preinscriptions,
+    };
+
     const response = await fetch(`${baseURL}/api/Mention`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newMention)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      throw new Error(`Erreur HTTP : ${response.status}`);
+      const text = await response.text();
+      throw new Error(`Erreur HTTP : ${response.status} - ${text}`);
     }
 
-    const data: Mention = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Erreur lors du POST :', error);
     throw error;
   }
 };
+
 
 export const update = async (id_: number, updateMention: Partial<Mention>): Promise<Mention> => {
   const payload = Object.fromEntries(

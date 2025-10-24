@@ -33,32 +33,42 @@ import { Mention } from "@/services/types/mention"
 import { useMention } from "@/hooks/useMention"
 
 export function MentionManagement() {
-  const {mentions, createMention, updateMention, removeMention} = useMention();
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editingMention, setEditingMention] = useState<Mention | null>(null)
+  const { mentions, createMention, updateMention, removeMention } = useMention();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingMention, setEditingMention] = useState<Mention | null>(null);
+
   const [formData, setFormData] = useState({
     nomMention: "",
-    descriptionMention: "",
     abbreviation: "",
-  })
-  const { toast } = useToast()
+    descriptionMention: "",
+    logoPath: "",
+    laboratoires: [{ idLaboratoire: 1 }],
+    mentionNiveauParcours: [],
+    preinscriptions: [],
+  });
+
+  const { toast } = useToast();
 
   const filteredMentions = mentions.filter(
     (mention) =>
       mention.nomMention.toLowerCase().includes(searchTerm.toLowerCase()) ||
       mention.abbreviation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mention.descriptionMention?.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      mention.descriptionMention?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const resetForm = () => {
     setFormData({
       nomMention: "",
-      descriptionMention: "",
       abbreviation: "",
-    })
-  }
+      descriptionMention: "",
+      logoPath: "",
+      laboratoires: [{ idLaboratoire: 1 }],
+      mentionNiveauParcours: [],
+      preinscriptions: [],
+    });
+  };
 
   const handleAdd = async () => {
     if (!formData.nomMention || !formData.abbreviation || !formData.descriptionMention) {
@@ -66,62 +76,109 @@ export function MentionManagement() {
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    const newMention: Mention = {
-      nomMention: formData.nomMention,
-      descriptionMention: formData.descriptionMention,
-      abbreviation: formData.abbreviation.toUpperCase(),
-    }
+    try {
+      const payload = {
+        nomMention: formData.nomMention,
+        abbreviation: formData.abbreviation,
+        descriptionMention: formData.descriptionMention,
+        logoPath: formData.logoPath || null,
+        laboratoireIds: [1] // juste les IDs
+      };
 
-    await createMention(newMention)
-    setIsAddDialogOpen(false)
-    resetForm()
-    toast({
-      title: "Succès",
-      description: "Mention ajoutée avec succès",
-    })
-  }
+      await createMention(payload);
+
+
+      setIsAddDialogOpen(false);
+      resetForm();
+
+      toast({
+        title: "Succès",
+        description: "Mention ajoutée avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l’ajout :", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d’ajouter la mention. Vérifiez les champs.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleEdit = (mention: Mention) => {
-    setEditingMention(mention)
+    setEditingMention(mention);
     setFormData({
       nomMention: mention.nomMention,
-      descriptionMention: mention.descriptionMention||"",
+      descriptionMention: mention.descriptionMention || "",
       abbreviation: mention.abbreviation,
-    })
-    setIsEditDialogOpen(true)
-  }
+      logoPath: mention.logoPath || "",
+      laboratoires: mention.laboratoires || [{ idLaboratoire: 1 }],
+      mentionNiveauParcours: mention.mentionNiveauParcours || [],
+      preinscriptions: mention.preinscriptions || [],
+    });
+    setIsEditDialogOpen(true);
+  };
 
-  const handleUpdate = async() => {
+  const handleUpdate = async () => {
     if (!formData.nomMention || !formData.abbreviation || !formData.descriptionMention || !editingMention) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    await updateMention(editingMention.idMention||0, formData)
-    setIsEditDialogOpen(false)
-    setEditingMention(null)
-    resetForm()
-    toast({
-      title: "Succès",
-      description: "Mention mise à jour avec succès",
-    })
-  }
+    try {
+      await updateMention(editingMention.idMention || 0, {
+        nomMention: formData.nomMention,
+        abbreviation: formData.abbreviation.toUpperCase(),
+        descriptionMention: formData.descriptionMention,
+        logoPath: formData.logoPath,
+        laboratoires: formData.laboratoires,
+        mentionNiveauParcours: [],
+        preinscriptions: [],
+      });
+
+      setIsEditDialogOpen(false);
+      setEditingMention(null);
+      resetForm();
+
+      toast({
+        title: "Succès",
+        description: "Mention mise à jour avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la mention.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDelete = async (id: number) => {
-    await removeMention(id)
-    toast({
-      title: "Succès",
-      description: "Mention supprimée avec succès",
-    })
-  }
+    try {
+      await removeMention(id);
+      toast({
+        title: "Succès",
+        description: "Mention supprimée avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la mention.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -147,58 +204,100 @@ export function MentionManagement() {
             </CardTitle>
 
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
-                  <Plus className="h-4 w-4 mr-2" />
-                  <div className="hidden md:block">Ajouter une Mention</div>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Ajouter une Nouvelle Mention</DialogTitle>
-                  <DialogDescription>
-                    Remplissez les informations pour créer une nouvelle mention académique.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="nom">Nom de la mention *</Label>
-                    <Input
-                      id="nom"
-                      value={formData.nomMention}
-                      onChange={(e) => setFormData({ ...formData, nomMention: e.target.value })}
-                      placeholder="Ex: Informatique"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="abbreviation">Abbreviation *</Label>
-                    <Input
-                      id="abbreviation"
-                      value={formData.abbreviation}
-                      onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
-                      placeholder="Ex: INFO"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.descriptionMention}
-                      onChange={(e) => setFormData({ ...formData, descriptionMention: e.target.value })}
-                      placeholder="Description de la mention..."
-                    />
-                  </div>
+            <DialogTrigger asChild>
+              <Button className="flex justify-between rounded-full w-10 h-10 md:w-fit md:rounded-md items-center bg-university-primary hover:bg-university-primary/90">
+                <Plus className="h-4 w-4 mr-2" />
+                <div className="hidden md:block">Ajouter une Mention</div>
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Ajouter une Nouvelle Mention</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations pour créer une nouvelle mention académique.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4 py-4">
+                {/* Nom */}
+                <div className="grid gap-2">
+                  <Label htmlFor="nom">Nom de la mention *</Label>
+                  <Input
+                    id="nom"
+                    value={formData.nomMention}
+                    onChange={(e) => setFormData({ ...formData, nomMention: e.target.value })}
+                    placeholder="Ex: Informatique"
+                  />
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                    Annuler
-                  </Button>
-                  <Button onClick={handleAdd} className="bg-university-primary hover:bg-university-primary/90">
-                    Ajouter
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+
+                {/* Abbreviation */}
+                <div className="grid gap-2">
+                  <Label htmlFor="abbreviation">Abbreviation *</Label>
+                  <Input
+                    id="abbreviation"
+                    value={formData.abbreviation}
+                    onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
+                    placeholder="Ex: INFO"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.descriptionMention}
+                    onChange={(e) =>
+                      setFormData({ ...formData, descriptionMention: e.target.value })
+                    }
+                    placeholder="Description de la mention..."
+                  />
+                </div>
+
+                {/* Logo */}
+                <div className="grid gap-2">
+                  <Label htmlFor="logoPath">Chemin du logo</Label>
+                  <Input
+                    id="logoPath"
+                    value={formData.logoPath}
+                    onChange={(e) => setFormData({ ...formData, logoPath: e.target.value })}
+                    placeholder="Ex: logo_info.png"
+                  />
+                </div>
+
+                {/* Laboratoire (option simple avec ID numérique pour commencer) */}
+                <div className="grid gap-2">
+                  <Label htmlFor="laboratoire">ID Laboratoire</Label>
+                  <Input
+                    id="laboratoire"
+                    type="number"
+                    value={formData.laboratoires[0]?.idLaboratoire || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        laboratoires: [{ idLaboratoire: Number(e.target.value) }],
+                      })
+                    }
+                    placeholder="Ex: 1"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleAdd}
+                  className="bg-university-primary hover:bg-university-primary/90"
+                >
+                  Ajouter
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           </div>
         </CardHeader>
         <CardContent>
@@ -374,47 +473,98 @@ export function MentionManagement() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Modifier la Mention</DialogTitle>
-            <DialogDescription>Modifiez les informations de la mention sélectionnée.</DialogDescription>
+            <DialogDescription>
+              Modifiez les informations de la mention sélectionnée.
+            </DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-4 py-4">
+            {/* Nom de la mention */}
             <div className="grid gap-2">
               <Label htmlFor="edit-nom">Nom de la mention *</Label>
               <Input
                 id="edit-nom"
                 value={formData.nomMention}
-                onChange={(e) => setFormData({ ...formData, nomMention: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, nomMention: e.target.value })
+                }
                 placeholder="Ex: Informatique"
               />
             </div>
+
+            {/* Abbreviation */}
             <div className="grid gap-2">
               <Label htmlFor="edit-abbreviation">Abbreviation *</Label>
               <Input
                 id="edit-abbreviation"
                 value={formData.abbreviation}
-                onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, abbreviation: e.target.value })
+                }
                 placeholder="Ex: INFO"
               />
             </div>
+
+            {/* Description */}
             <div className="grid gap-2">
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
                 id="edit-description"
                 value={formData.descriptionMention}
-                onChange={(e) => setFormData({ ...formData, descriptionMention: e.target.value })}
-                placeholder="descriptionMention de la mention..."
+                onChange={(e) =>
+                  setFormData({ ...formData, descriptionMention: e.target.value })
+                }
+                placeholder="Description de la mention..."
+              />
+            </div>
+
+            {/* LogoPath (optionnel) */}
+            <div className="grid gap-2">
+              <Label htmlFor="edit-logo">Logo (chemin ou URL)</Label>
+              <Input
+                id="edit-logo"
+                value={formData.logoPath}
+                onChange={(e) =>
+                  setFormData({ ...formData, logoPath: e.target.value })
+                }
+                placeholder="Ex: logo_info.png"
+              />
+            </div>
+
+            {/* Labo (facultatif — juste ID, pas création) */}
+            <div className="grid gap-2">
+              <Label htmlFor="edit-labo">ID du laboratoire associé (optionnel)</Label>
+              <Input
+                id="edit-labo"
+                type="number"
+                value={formData.laboratoireIds?.[0] || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    laboratoireIds: e.target.value
+                      ? [parseInt(e.target.value)]
+                      : [],
+                  })
+                }
+                placeholder="Ex: 1"
               />
             </div>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Annuler
             </Button>
-            <Button onClick={handleUpdate} className="bg-university-primary hover:bg-university-primary/90">
+            <Button
+              onClick={handleUpdate}
+              className="bg-university-primary hover:bg-university-primary/90"
+            >
               Mettre à jour
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   )
 }
