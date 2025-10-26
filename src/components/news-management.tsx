@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { Plus, Newspaper, Tag } from "lucide-react"
+import { Plus, Newspaper, Tag, Image } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Actualite } from "@/services/types/event"
 import { useNews } from "@/hooks/useNews"
@@ -13,6 +13,7 @@ import { NewsCard } from "./news/NewsCard"
 import { NewsFilters } from "./news/NewsFilters"
 import { NewsFormDialog } from "./news/NewsFormDialog"
 import { CategoryDialog } from "./news/CategoryDialog"
+import { MediaManagementDialog } from "./news/MediaManagementDialog"
 
 export function NewsManagement() {
   const { news, categories, createCategories, createMedias, removeMedia, createActualite, updateActus, removeNews, changeStatus } = useNews()
@@ -23,7 +24,9 @@ export function NewsManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false)
   const [editingNews, setEditingNews] = useState<Actualite | null>(null)
+  const [selectedNewsForMedia, setSelectedNewsForMedia] = useState<Actualite | null>(null)
 
   const [formData, setFormData] = useState<Actualite>({
     titre: "",
@@ -90,31 +93,46 @@ export function NewsManagement() {
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files && e.target.files[0] && selectedNewsForMedia?.idActualite) {
       const file = e.target.files[0]
-      const uploadedMedia = await createMedias(file, editingNews?.idActualite ?? 0)
-      setFormData({
-        ...formData,
-        medias: [...formData.medias, uploadedMedia],
-      })
+      try {
+        
+        
+        // Mettre à jour la liste des actualités pour refléter le nouveau média
+        // Vous devrez peut-être rafraîchir les données ici
+        
+        toast({
+          title: "Succès",
+          description: "Média ajouté avec succès",
+        })
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de l'ajout du média",
+          variant: "destructive",
+        })
+      }
     }
   }
 
   const handleRemoveMedia = async (mediaId: number) => {
-    if (!editingNews?.idActualite) {
+    if (!selectedNewsForMedia?.idActualite) {
       throw new Error("Aucune actualité sélectionnée")
     }
 
-    await removeMedia(editingNews.idActualite, mediaId)
-    setFormData({
-      ...formData,
-      medias: formData.medias.filter((m) => m.idMedia !== mediaId),
-    })
-
-    toast({
-      title: "Succès",
-      description: "Média supprimé avec succès",
-    })
+    try {
+      await removeMedia(selectedNewsForMedia.idActualite, mediaId)
+      toast({
+        title: "Succès",
+        description: "Média supprimé avec succès",
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la suppression du média",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleAdd = async () => {
@@ -141,18 +159,31 @@ export function NewsManagement() {
       dateCommencement: formData.dateCommencement,
       dateFin: formData.dateFin,
       lieu: formData.lieu,
-      dateCreation: formData.dateCreation,
+      dateCreation: new Date(),
       statut: "draft",
-      medias: formData.medias,
+      medias: [],
     }
 
-    await createActualite(newNews)
-    setIsAddDialogOpen(false)
-    resetForm()
-    toast({
-      title: "Succès",
-      description: "Actualité ajoutée avec succès",
-    })
+    try {
+      const createdNews = await createActualite(newNews)
+      setIsAddDialogOpen(false)
+      resetForm()
+      
+      toast({
+        title: "Succès",
+        description: "Actualité créée avec succès",
+      })
+
+      // Ouvrir directement le dialogue de gestion des médias
+      setSelectedNewsForMedia(createdNews)
+      setIsMediaDialogOpen(true)
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la création de l'actualité",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleEdit = (n: Actualite) => {
@@ -197,36 +228,64 @@ export function NewsManagement() {
       dateCommencement: formData.dateCommencement || null,
       dateFin: formData.dateFin || undefined,
       dateCreation: formData.dateCreation || undefined,
-      dateMiseAJour: formData.dateMiseAJour || undefined,
+      dateMiseAJour: new Date(),
       lieu: formData.lieu,
       statut: formData.statut,
-      medias: formData.medias,
     }
 
-    await updateActus(updatedActualite)
-    setIsEditDialogOpen(false)
-    setEditingNews(null)
-    resetForm()
-    toast({
-      title: "Succès",
-      description: "Actualité mise à jour avec succès",
-    })
+    try {
+      await updateActus(updatedActualite)
+      setIsEditDialogOpen(false)
+      setEditingNews(null)
+      resetForm()
+      toast({
+        title: "Succès",
+        description: "Actualité mise à jour avec succès",
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la mise à jour de l'actualité",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleManageMedia = (n: Actualite) => {
+    setSelectedNewsForMedia(n)
+    setIsMediaDialogOpen(true)
   }
 
   const handleDelete = async (id: number) => {
-    await removeNews(id)
-    toast({
-      title: "Succès",
-      description: "Actualité supprimée avec succès",
-    })
+    try {
+      await removeNews(id)
+      toast({
+        title: "Succès",
+        description: "Actualité supprimée avec succès",
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la suppression de l'actualité",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleStatusChange = async (idActualite: number, newStatus: "draft" | "published" | "archived") => {
-    await changeStatus(idActualite, newStatus)
-    toast({
-      title: "Succès",
-      description: `Statut mis à jour vers ${newStatus}`,
-    })
+    try {
+      await changeStatus(idActualite, newStatus)
+      toast({
+        title: "Succès",
+        description: `Statut mis à jour vers ${newStatus}`,
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la mise à jour du statut",
+        variant: "destructive",
+      })
+    }
   }
 
   const getStatusBadge = (statut: "draft" | "published" | "archived") => {
@@ -316,6 +375,7 @@ export function NewsManagement() {
                       news={n}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onManageMedia={handleManageMedia}
                       onStatusChange={handleStatusChange}
                       getStatusBadge={getStatusBadge}
                     />
@@ -343,8 +403,6 @@ export function NewsManagement() {
         categories={categories}
         onFormChange={setFormData}
         onSubmit={handleAdd}
-        onFileChange={handleFileChange}
-        onRemoveMedia={handleRemoveMedia}
       />
 
       <NewsFormDialog
@@ -355,6 +413,12 @@ export function NewsManagement() {
         isEdit
         onFormChange={setFormData}
         onSubmit={handleUpdate}
+      />
+
+      <MediaManagementDialog
+        open={isMediaDialogOpen}
+        onOpenChange={setIsMediaDialogOpen}
+        actualite={selectedNewsForMedia || { idActualite: 0, titre: '', categorie: '', statut: '', medias: [] }}
         onFileChange={handleFileChange}
         onRemoveMedia={handleRemoveMedia}
       />

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { LayoutDashboard, GraduationCap, BookOpen, Newspaper, FlaskConical, Users, Settings, Layers, LogOut } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "@/context/auth-context"
 
 interface SidebarProps {
   isMobileOpen?: boolean
@@ -18,16 +19,28 @@ const navigationItems = [
   { path: "/labs", label: "Laboratoires", icon: FlaskConical },
   { path: "/people", label: "Personnes", icon: Users },
   { path: "/global-info", label: "Infos Globales", icon: Settings },
-  { path: "/login", label: "Deconnexion", icon: LogOut },  
 ]
 
 function SidebarContent({ onNavigate }: { onNavigate: (path: string) => void }) {
   const location = useLocation()
+  const { user, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    onNavigate('/login')
+  }
 
   return (
     <>
       <div className="p-4 md:p-6 border-b border-border">
-        <h1 className="text-lg md:text-xl font-bold text-university-primary truncate">Admin Universitaire</h1>
+        <h1 className="text-lg md:text-xl font-bold text-university-primary truncate">
+          Admin Universitaire
+        </h1>
+        {user && (
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 truncate mt-1">
+            {user.identifiant} • {user.role}
+          </p>
+        )}
       </div>
 
       <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
@@ -50,6 +63,16 @@ function SidebarContent({ onNavigate }: { onNavigate: (path: string) => void }) 
             </Button>
           )
         })}
+        
+        {/* Bouton de déconnexion */}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 md:gap-3 h-10 md:h-11 text-sm md:text-base text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          <span className="truncate">Déconnexion</span>
+        </Button>
       </nav>
     </>
   )
@@ -60,7 +83,7 @@ export function Sidebar({ isMobileOpen, onMobileToggle }: SidebarProps) {
 
   const handleNavigate = (path: string) => {
     navigate(path)
-    onMobileToggle?.(false) // Close mobile sidebar when navigating
+    onMobileToggle?.(false)
   }
 
   return (

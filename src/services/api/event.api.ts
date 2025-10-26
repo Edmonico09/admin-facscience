@@ -1,10 +1,10 @@
 import { baseURL } from "..";
 import { upcomingEvents } from "../mocked-data";
-import { Actualite, Category, Media } from "../types/event";
+import { Actualite, Category} from "../types/event";
 
 export const getClosestEvent = async () => {
   try {
-    // const response = await fetch(`${baseURL}/recent_events`, {
+    // const response = await fetch(`${baseURL}/api/Actualite/all`, {
     //   method: 'GET',
     //   headers: {
     //     'Content-Type': 'application/json'
@@ -19,354 +19,276 @@ export const getClosestEvent = async () => {
     // return data;
     return upcomingEvents;
   } catch (error) {
-    console.error('Erreur lors du POST :', error);
+    console.error('Erreur lors de la récupération des événements :', error);
     throw error;
   }
 }
 
-
-export async function createCategory(name : string) {
-    try {
-
-        const response = await fetch(`${baseURL}/envent/category/add/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(name),
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP lors de la création de category : ${response.status}`);
-        }
-        
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+// CATEGORIES
+export async function createCategory(name: string) {
+  try {
+    const response = await fetch(`${baseURL}/api/CategorieActualite`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nom: name }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de la création de catégorie : ${response.status}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    handleError(error, 'création de catégorie');
   }
 }
-
 
 export async function getCategory(): Promise<Category[]> {
-    try {
-
-        const res = await fetch(`${baseURL}/envent/category/list/`);
-        if (!res.ok) throw new Error(`Erreur lors de la récupération des category`);
-        const data = await res.json();
-        return data;
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
-    }
+  try {
+    const res = await fetch(`${baseURL}/api/CategorieActualite`);
+    if (!res.ok) throw new Error(`Erreur lors de la récupération des category`);
+    const data = await res.json();
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    // Mapping des données backend vers le format frontend
+    return data.map((cat: any) => ({
+      id: cat.id || cat.Id,
+      name: cat.nom || cat.Nom
+    }));
+  } catch (error) {
+    handleError(error, 'récupération des catégories');
   }
 }
 
-
-export async function deleteCategory(id : number){
-    try {
-
-        const response = await fetch(`${baseURL}/envent/category/delete/${id}`);
-        
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de la suppression de category`);
-        }
+export async function deleteCategory(id: number) {
+  try {
+    const response = await fetch(`${baseURL}/api/CategorieActualite/${id}`, {
+      method: 'DELETE'
+    });
     
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de la suppression de catégorie`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    handleError(error, 'suppression de catégorie');
   }
 }
 
+// ACTUALITES
+export async function createNews(data: Actualite) {
+  try {
+    // Fonction pour convertir les dates en format ISO (UTC)
+    const toUTCString = (date: Date | undefined) => {
+      return date ? new Date(date).toISOString() : undefined;
+    };
 
-export async function createNews(data : Actualite) {
+    // Mapping vers le modèle backend
+    const backendData = {
+      Titre: data.titre,
+      IdCategorie: parseInt(data.categorie),
+      Description: data.description,
+      Contenu: data.contenu,
+      DateCommencement: toUTCString(data.dateCommencement),
+      DateFin: toUTCString(data.dateFin),
+      Lieu: data.lieu,
+      IsUrgent: data.isUrgent || false
+    };
 
-    try {
+    console.log('📤 Données envoyées au backend:', backendData);
 
-        const response = await fetch(`${baseURL}/envent/add/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP lors de la création de news`);
-        }
-        
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    const response = await fetch(`${baseURL}/api/Actualite`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(backendData),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    console.error('❌ Erreur lors de la création d\'actualité:', error);
+    throw error;
   }
 }
 
-export async function UpdateNews(data : Actualite) {
-    try {
+export async function UpdateNews(data: Actualite) {
+  try {
+    // Mapping vers le modèle backend - CORRECTION ICI
+    const backendData = {
+      Titre: data.titre,
+      IdCategorie: parseInt(data.categorie), // Utilisez 'categorie' au lieu de 'idCategorie'
+      Description: data.description,
+      Contenu: data.contenu,
+      DateCommencement: data.dateCommencement,
+      DateFin: data.dateFin,
+      Lieu: data.lieu,
+      IsUrgent: data.isUrgent || false
+    };
 
-        const response = await fetch(`${baseURL}/envent/update/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP lors de la mis a jour de news`);
-        }
-        
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    const response = await fetch(`${baseURL}/api/Actualite/${data.idActualite}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(backendData),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    console.error('❌ Erreur lors de la mise à jour d\'actualité:', error);
+    throw error;
   }
 }
 
-
-export async function getNews():  Promise<Actualite[]>{
-    try {
-
-        const response = await fetch(`${baseURL}/envent/list/`);
-        
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de la récupération d'actualités: ${response.status}`);
-        }
+export async function getNews(): Promise<Actualite[]> {
+  try {
+    const response = await fetch(`${baseURL}/api/Actualite/all`);
     
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de la récupération d'actualités: ${response.status}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
+    const data = await response.json();
     
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    // Mapping depuis le DTO backend vers votre interface frontend
+    return data.map((item: any) => ({
+      idActualite: item.id,
+      titre: item.titre,
+      categorie: item.categorie || item.idCategorie?.toString(), // Assurez-vous d'avoir la catégorie
+      idCategorie: item.idCategorie,
+      isUrgent: item.isUrgent || false,
+      contenu: item.contenu,
+      description: item.description,
+      lieu: item.lieu,
+      dateCommencement: item.dateCommencement ? new Date(item.dateCommencement) : undefined,
+      dateFin: item.dateFin ? new Date(item.dateFin) : undefined,
+      statut: item.statut || "draft",
+      medias: item.listMedia || item.ListMedia || [] // Assurez-vous d'avoir les médias
+    }));
+  } catch (error) {
+    handleError(error, 'récupération d\'actualités');
   }
 }
 
-
-export async function deleteNews(id : number){
-    try {
-
-        const response = await fetch(`${baseURL}/envent/delete/${id}`);
-        
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de la suppression  d' actualités: ${response.status}`);
-        }
+export async function deleteNews(id: number) {
+  try {
+    const response = await fetch(`${baseURL}/api/Actualite/${id}`, {
+      method: 'DELETE'
+    });
     
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de la suppression d'actualité: ${response.status}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    handleError(error, 'suppression d\'actualité');
   }
 }
 
-
-
-export async function createMedia(idActualite : number , data : File){
-
-    try {
-
-        const formData = new FormData();
-        formData.append(`file` , data);
-        const response = await fetch(`${baseURL}/envent/media/add/${idActualite}` , {
-          method: "POST",
-        //   headers: { "Content-Type": "multipart/form-data" },
-            body: formData,
-        });
-        
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de l'ajout  de medias: ${response.status}`);
-        }
+// event.api.ts - fonctions corrigées
+export async function createMedia(idActualite: number, data: File) {
+  try {
+    const formData = new FormData();
+    formData.append('file', data);
     
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    const response = await fetch(`${baseURL}/api/Media/actualite/${idActualite}`, {
+      method: "POST",
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de l'ajout de média: ${response.status}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    handleError(error, 'ajout de média');
   }
 }
 
-
-export async function deleteMedia(idActualite : number , id_media: number ){
-    try {
-
-        const response = await fetch(`${baseURL}/envent/media/delete/${idActualite}/${id_media}`);
-        
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de la suppression  de mdeias de l'actualités: ${response.status}`);
-        }
+export async function deleteMedia(idActualite: number, id_media: number) {
+  try {
+    const response = await fetch(`${baseURL}/api/Media/actualite/${idActualite}/${id_media}`, {
+      method: 'DELETE'
+    });
     
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de la suppression de média: ${response.status}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    handleError(error, 'suppression de média');
   }
 }
 
-
-export async function updateStatus(idActualite : number , statut : string) : Promise<Actualite> {
-
-    try {
-
-            const data = {
-                "statut" : statut
-            }
-        const response = await fetch(`${baseURL}/envent/statut/update/${idActualite}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP lors de la création de news`);
-        }
-        
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+// STATUT - NOTE: Cet endpoint n'est pas encore implémenté dans votre contrôleur
+export async function updateStatus(idActualite: number, statut: string): Promise<Actualite> {
+  try {
+    const data = {
+      statut: statut
+    };
+    
+    const response = await fetch(`${baseURL}/api/Actualite/${idActualite}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP lors de la mise à jour du statut`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
+    return response.json();
+  } catch (error) {
+    handleError(error, 'mise à jour du statut');
   }
 }
 
+// Fonction utilitaire pour la gestion des erreurs
+function handleError(error: unknown, context: string): never {
+  if (error instanceof TypeError) {
+    throw new Error(`Erreur de connexion au serveur lors de la ${context}. Vérifiez votre connexion internet.`);
+  }
+  
+  if (error instanceof SyntaxError) {
+    throw new Error(`Erreur de format des données reçues du serveur lors de la ${context}.`);
+  }
+  
+  if (error instanceof Error) {
+    throw error;
+  }
+  
+  throw new Error(`Une erreur inattendue s'est produite lors de la ${context}.`);
+}
 
+export async function getActualites(): Promise<Actualite[]> {
+  try {
+    const response = await fetch(`${baseURL}/api/Actualite`);
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    
+    const actualites = await response.json();
+    
+    // Transformer les dates si nécessaire
+    return actualites.map((actu: any) => ({
+      ...actu,
+      dateCommencement: actu.dateCommencement ? new Date(actu.dateCommencement) : null,
+      dateFin: actu.dateFin ? new Date(actu.dateFin) : null,
+      dateCreation: actu.dateCreation ? new Date(actu.dateCreation) : new Date()
+    }));
+  } catch (error) {
+    console.error('Erreur lors de la récupération des actualités:', error);
+    throw new Error('Impossible de récupérer les actualités');
+  }
+}

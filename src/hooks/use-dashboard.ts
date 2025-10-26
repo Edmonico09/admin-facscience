@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react"
-import { StatDb, StatItem } from "@/services/types/stat"
+import { StatItem } from "@/services/types/stat"
 import { Actualite } from "@/services/types/event"
-import { statistic } from "@/services/api/stat.api"
 import { BookOpen, FlaskConical, GraduationCap, Newspaper, TrendingUp, Users } from "lucide-react"
-import { getClosestEvent } from "@/services/api/event.api"
 import { ActivityItem } from "@/services/types/activity"
 import { useActivity } from "@/context/activity-context"
+import { getStatistics } from "@/services/api/stat.api"
+import { getActualites, getClosestEvent } from "@/services/api/event.api"
 
 export const statConfig: Record<string, { icon: any; color: string }> = {
   Mentions: { icon: GraduationCap, color: "text-university-primary" },
@@ -20,32 +20,53 @@ export function useDashboard() {
   const [stats, setStats] = useState<StatItem[]>([])
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<Actualite[]>([])
-  const { getRecentActivity, activities } = useActivity()
+  const [loading, setLoading] = useState(true)
+  const { getRecentActivity } = useActivity()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const datas1: StatDb[] = await statistic()
-        if (!datas1) throw new Error("Erreur lors de la récupération des statistiques")
-
-        const statsMapped: StatItem[] = datas1.map((stat) => ({
+        setLoading(true)
+        
+        // Récupérer les statistiques
+        const statistics = await getStatistics()
+        const statsMapped: StatItem[] = statistics.map((stat) => ({
           ...stat,
           ...statConfig[stat.title],
         }))
         setStats(statsMapped)
 
+        // Récupérer les activités récentes depuis le contexte
         setRecentActivities(getRecentActivity(5))
 
-        const datas2 = await getClosestEvent()
-        if (!datas2) throw new Error("Erreur lors de la récupération des événements")
-        setUpcomingEvents(datas2)
+        // Récupérer les événements à venir
+        const events = await getClosestEvent()
+        setUpcomingEvents(events)
+
       } catch (error) {
-        console.error(error)
+        console.error("Erreur dans useDashboard:", error)
+        
+        // Données de fallback en cas d'erreur
+        setStats([
+          { title: "Mentions", value: 0, change: "+0%", ...statConfig.Mentions },
+          { title: "Parcours", value: 0, change: "+0%", ...statConfig.Parcours },
+          { title: "Actualités", value: 0, change: "+0%", ...statConfig.Actualités },
+          { title: "Laboratoires", value: 0, change: "+0%", ...statConfig.Laboratoires },
+          { title: "Personnes", value: 0, change: "+0%", ...statConfig.Personnes },
+        ])
+        setUpcomingEvents([])
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchData()
-  }, [activities])
+  }, [getRecentActivity])
 
-  return { stats, recentActivities, upcomingEvents }
+  return { 
+    stats, 
+    recentActivities, 
+    upcomingEvents, 
+    loading 
+  }
 }

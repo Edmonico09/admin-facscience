@@ -6,29 +6,36 @@ export async function getLabos(): Promise<Laboratory[]> {
         const response = await fetch(`${baseURL}/api/Laboratoire`);
       
         if (!response.ok) {
-          throw new Error(`Erreur HTTP lors de la récupération des laboraatoires: ${response.status}`);
+          throw new Error(`Erreur HTTP lors de la récupération des laboratoires: ${response.status}`);
         }
       
-        return response.json(); 
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        const labs = await response.json();
+        
+        // Adapter les données du backend au format frontend avec plus de robustesse
+        return labs.map((lab: any) => ({
+          idLabo: lab.idLaboratoire || 0,
+          nomLabo: lab.nomLabo || "",
+          mentionRattachement: lab.mentionRattachement?.toString() || "",
+          description: lab.description || "",
+          abbreviation: lab.abbreviation || "",
+          ecoleDoctoraleRattachement: lab.ecoleDoctoraleRattachement?.toString() || "",
+          responsable: "" // Le backend ne fournit pas cette information
+        }));
+    } catch (error) {
+        if (error instanceof TypeError) {
+          throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        }
+        
+        if (error instanceof SyntaxError) {
+          throw new Error('Erreur de format des données reçues du serveur.');
+        }
+        
+        if (error instanceof Error) {
+          throw error;
+        }
+        
+        throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }
 
 export async function getLaboById(id_labo: number): Promise<Laboratory> {
@@ -39,232 +46,163 @@ export async function getLaboById(id_labo: number): Promise<Laboratory> {
           throw new Error(`Erreur HTTP lors de la récupération du laboratoire: ${response.status}`);
         }
       
-        return response.json(); 
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
-    }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération du laboratoire.');
-  }
-}
-
-export async function  addDescription(id_labo:number , data : DescriptionItem): Promise<[]> {
-    try {
-
-        const response = await fetch(`${baseURL}/labo/decription/add/${id_labo}` , {
-            method:'POST',
-            headers: {'Content-Type': 'application/json'},
-            body : JSON.stringify(data)
-        });
-      
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP lors de l'ajout des descriptions: ${response.status}`);
-        }
-      
-        return response.json(); 
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
-    }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
-}
-
-
-export async function deleteDescription(id_labo:number, cle: string){
-    try {
-
-        const response = await fetch(`${baseURL}/labo/decription/delete/${id_labo}/${cle}`);
+        const lab = await response.json();
         
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de la suppression  d' actualités: ${response.status}`);
+        // Adapter les données du backend au format frontend
+        return {
+          idLabo: lab.idLaboratoire || 0,
+          nomLabo: lab.nomLabo || "",
+          mentionRattachement: lab.mentionRattachement?.toString() || "",
+          description: lab.description || "",
+          abbreviation: lab.abbreviation || "",
+          ecoleDoctoraleRattachement: lab.ecoleDoctoraleRattachement?.toString() || "",
+          responsable: ""
+        };
+    } catch (error) {
+        if (error instanceof TypeError) {
+          throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
         }
-    
-        return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        
+        if (error instanceof SyntaxError) {
+          throw new Error('Erreur de format des données reçues du serveur.');
+        }
+        
+        if (error instanceof Error) {
+          throw error;
+        }
+        
+        throw new Error('Une erreur inattendue s\'est produite lors de la récupération du laboratoire.');
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }
 
-
-export async function updateDescription(id_labo: number, data: DescriptionItem): Promise<DescriptionItem> {
+export async function addLabo(data: Laboratory): Promise<Laboratory> {
     try {
+        // Préparer les données pour le backend
+        const backendData = {
+            nomLabo: data.nomLabo,
+            mentionRattachement: data.mentionRattachement ? parseInt(data.mentionRattachement) : null,
+            description: data.description,
+            abbreviation: data.abbreviation || "",
+            ecoleDoctoraleRattachement: data.ecoleDoctoraleRattachement ? parseInt(data.ecoleDoctoraleRattachement) : null
+        };
 
-        const response = await fetch(`${baseURL}/labo/decription/update/${id_labo}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-      
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP lors de l'update des descriptions: ${response.status}`);
-        }
-      
-        return response.json(); 
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
-    }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
-}
-
-
-export async function  addLabo(data : Laboratory): Promise<Laboratory> {
-    try {
-
-        const response = await fetch(`${baseURL}/api/Laboratoire` , {
-            method:'POST',
+        const response = await fetch(`${baseURL}/api/Laboratoire`, {
+            method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body : JSON.stringify(data)
+            body: JSON.stringify(backendData)
         });
       
         if (!response.ok) {
-          throw new Error(`Erreur HTTP lors de l'ajout de laboratoire: ${response.status}`);
+          const errorText = await response.text();
+          throw new Error(`Erreur HTTP lors de l'ajout de laboratoire: ${response.status} - ${errorText}`);
         }
       
-        return response.json(); 
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        const lab = await response.json();
+        
+        // Adapter la réponse du backend au format frontend
+        return {
+          idLabo: lab.idLaboratoire || 0,
+          nomLabo: lab.nomLabo || "",
+          mentionRattachement: lab.mentionRattachement?.toString() || "",
+          description: lab.description || "",
+          abbreviation: lab.abbreviation || "",
+          ecoleDoctoraleRattachement: lab.ecoleDoctoraleRattachement?.toString() || "",
+          responsable: ""
+        };
+    } catch (error) {
+        if (error instanceof TypeError) {
+          throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        }
+        
+        if (error instanceof SyntaxError) {
+          throw new Error('Erreur de format des données reçues du serveur.');
+        }
+        
+        if (error instanceof Error) {
+          throw error;
+        }
+        
+        throw new Error('Une erreur inattendue s\'est produite lors de l\'ajout du laboratoire.');
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }
 
 export async function updateLabo(id_labo: number, data: Laboratory): Promise<Laboratory> {
     try {
+        // Préparer les données pour le backend
+        const backendData = {
+            nomLabo: data.nomLabo,
+            mentionRattachement: data.mentionRattachement ? parseInt(data.mentionRattachement) : null,
+            description: data.description,
+            abbreviation: data.abbreviation || "",
+            ecoleDoctoraleRattachement: data.ecoleDoctoraleRattachement ? parseInt(data.ecoleDoctoraleRattachement) : null
+        };
 
         const response = await fetch(`${baseURL}/api/Laboratoire/${id_labo}`, {
-          method: "PUT", 
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(backendData),
         });
       
         if (!response.ok) {
-          throw new Error(`Erreur HTTP lors de la mise à jour du laboratoire: ${response.status}`);
+          const errorText = await response.text();
+          throw new Error(`Erreur HTTP lors de la mise à jour du laboratoire: ${response.status} - ${errorText}`);
         }
       
-        return response.json(); 
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        const lab = await response.json();
+        
+        // Adapter la réponse du backend au format frontend
+        return {
+          idLabo: lab.idLaboratoire || 0,
+          nomLabo: lab.nomLabo || "",
+          mentionRattachement: lab.mentionRattachement?.toString() || "",
+          description: lab.description || "",
+          abbreviation: lab.abbreviation || "",
+          ecoleDoctoraleRattachement: lab.ecoleDoctoraleRattachement?.toString() || "",
+          responsable: ""
+        };
+    } catch (error) {
+        if (error instanceof TypeError) {
+          throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        }
+        
+        if (error instanceof SyntaxError) {
+          throw new Error('Erreur de format des données reçues du serveur.');
+        }
+        
+        if (error instanceof Error) {
+          throw error;
+        }
+        
+        throw new Error('Une erreur inattendue s\'est produite lors de la mise à jour du laboratoire.');
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }
 
-
-export async function deleteLabo(id_labo:number){
+export async function deleteLabo(id_labo: number): Promise<void> {
     try {
-
         const response = await fetch(`${baseURL}/api/Laboratoire/${id_labo}`, {
             method: "DELETE"
         });
         
-        if(!response.ok){
-            throw new Error(`Erreur HTTP lors de la suppression  de labo: ${response.status}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erreur HTTP lors de la suppression de labo: ${response.status} - ${errorText}`);
         }
     
-        return response.json();
+        // Pour DELETE, on ne retourne généralement pas de données
+        return;
     } catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        if (error instanceof TypeError) {
+          throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        }
+        
+        if (error instanceof SyntaxError) {
+          throw new Error('Erreur de format des données reçues du serveur.');
+        }
+        
+        if (error instanceof Error) {
+          throw error;
+        }
+        
+        throw new Error('Une erreur inattendue s\'est produite lors de la suppression du laboratoire.');
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }

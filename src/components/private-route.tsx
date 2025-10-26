@@ -1,4 +1,4 @@
-import useAuth from "@/context/auth-context";
+import {useAuth} from "@/context/auth-context";
 import { JSX } from "react";
 import { Navigate } from "react-router-dom";
 

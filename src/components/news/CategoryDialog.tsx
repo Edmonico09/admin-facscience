@@ -51,7 +51,8 @@ export function CategoryDialog({
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <Badge key={category.id} className="border">
-                  {category.name}
+                  {/* Utilisez category.nom si disponible, sinon category.name */}
+                  {category.nom || category.name}
                 </Badge>
               ))}
             </div>

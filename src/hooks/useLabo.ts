@@ -13,33 +13,57 @@ export function useLabo() {
   const [persons, setPerson] = useState<BasePerson[]>([]);
   const [laboratories, setLaboratories] = useState<Laboratory[]>([]);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [mentionsData, personsData, labosData] = await Promise.all([
-        get(),
-        getAllPersons(),
-        getLabos(),
-      ]);
-      setMention(mentionsData);
-      setPerson(personsData);
-      setLaboratories(labosData);
-    } catch (err: any) {
-      setError(err.message || "Erreur lors du chargement des données");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Fonction pour normaliser les données des laboratoires
+  const normalizeLaboratory = (lab: any): Laboratory => ({
+    idLabo: lab.idLabo || lab.idLaboratoire || 0,
+    nomLabo: lab.nomLabo || "",
+    mentionRattachement: lab.mentionRattachement?.toString() || "",
+    description: lab.description || "",
+    abbreviation: lab.abbreviation || "",
+    ecoleDoctoraleRattachement: lab.ecoleDoctoraleRattachement?.toString() || "",
+    responsable: lab.responsable || ""
+  });
+
+// Dans useLabo.ts
+const fetchAll = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const [mentionsData, personsData, labosData] = await Promise.all([
+      get(),
+      getAllPersons(),
+      getLabos(),
+    ]);
+    
+    console.log('✅ Mentions chargées:', mentionsData);
+    console.log('✅ Laboratoires chargés:', labosData);
+    
+    setMention(mentionsData);
+    setPerson(personsData);
+    
+    const normalizedLabs = labosData.map(normalizeLaboratory);
+    console.log('✅ Laboratoires normalisés:', normalizedLabs);
+    
+    setLaboratories(normalizedLabs);
+  } catch (err: any) {
+    console.error('❌ Erreur useLabo:', err);
+    setError(err.message || "Erreur lors du chargement des données");
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   const createLaboratory = useCallback(async (newLab: Laboratory) => {
     setLoading(true);
     setError(null);
     try {
       const addedLabo = await addLabo(newLab);
-      setLaboratories((prev) => [...prev, addedLabo]);
+      // Normaliser le nouveau laboratoire avant de l'ajouter
+      const normalizedLab = normalizeLaboratory(addedLabo);
+      setLaboratories((prev) => [...prev, normalizedLab]);
     } catch (err: any) {
       setError(err.message || "Erreur lors de la création du laboratoire");
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -50,11 +74,14 @@ export function useLabo() {
     setError(null);
     try {
       const updatedLab = await updateLabo(idLabo, updatedLabData);
+      // Normaliser le laboratoire mis à jour
+      const normalizedLab = normalizeLaboratory(updatedLab);
       setLaboratories((prev) =>
-        prev.map((lab) => (lab.idLabo === updatedLab.idLabo ? updatedLab : lab))
+        prev.map((lab) => (lab.idLabo === normalizedLab.idLabo ? normalizedLab : lab))
       );
     } catch (err: any) {
       setError(err.message || "Erreur lors de la mise à jour du laboratoire");
+      throw err;
     } finally {
       setLoading(false);
     }

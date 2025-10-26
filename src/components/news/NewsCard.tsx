@@ -1,85 +1,118 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, MapPin, Edit } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, MapPin, Edit, Trash2, Image as ImageIcon } from "lucide-react"
 import { Actualite } from "@/services/types/event"
-import { DeleteNewsDialog } from "./DeleteNewsDialog"
 
 interface NewsCardProps {
   news: Actualite
   onEdit: (news: Actualite) => void
   onDelete: (id: number) => void
-  onStatusChange: (id: number, status: "draft" | "published" | "archived") => void
-  getStatusBadge: (status: "draft" | "published" | "archived") => React.ReactNode
+  onManageMedia: (news: Actualite) => void
+  onStatusChange: (idActualite: number, newStatus: "draft" | "published" | "archived") => void
+  getStatusBadge: (statut: "draft" | "published" | "archived") => JSX.Element
 }
 
-export function NewsCard({ news, onEdit, onDelete, onStatusChange, getStatusBadge }: NewsCardProps) {
+export function NewsCard({
+  news,
+  onEdit,
+  onDelete,
+  onManageMedia,
+  onStatusChange,
+  getStatusBadge,
+}: NewsCardProps) {
+  // Assurez-vous que medias est toujours un tableau
+  const medias = news.medias || []
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-2">{news.titre}</CardTitle>
-            <div className="flex items-center gap-2 mt-2">
-              {getStatusBadge(news.statut as "draft" | "published" | "archived")}
-            </div>
-          </div>
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg leading-tight">{news.titre}</CardTitle>
+          {getStatusBadge(news.statut as "draft" | "published" | "archived")}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {news.medias.length > 0 && (
-          <img
-            src={news.medias[0].chemin || "/placeholder.svg"}
-            alt={news.titre}
-            className="w-full h-32 object-cover rounded-md"
-          />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-3 w-3" />
+          <span>
+            {news.dateCommencement ? new Date(news.dateCommencement).toLocaleDateString() : "Date non définie"}
+          </span>
+        </div>
+        {news.lieu && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            <span>{news.lieu}</span>
+          </div>
         )}
-        <p className="text-sm text-muted-foreground line-clamp-2">{news.description}</p>
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            <span>
-              {news.dateCommencement ? new Date(news.dateCommencement).toLocaleDateString("fr-FR") : "-"}
-            </span>
-            {news.dateFin && (
-              <>
-                <span>-</span>
-                <span>{new Date(news.dateFin).toLocaleDateString("fr-FR")}</span>
-              </>
-            )}
-          </div>
-          {news.lieu && (
-            <div className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              <span>{news.lieu}</span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={() => onEdit(news)}>
-              <Edit className="h-3 w-3" />
-            </Button>
-            <DeleteNewsDialog
-              newsTitle={news.titre}
-              onConfirm={() => onDelete(news.idActualite!)}
-            />
-          </div>
-          <Select
-            value={news.statut}
-            onValueChange={(value: "draft" | "published" | "archived") =>
-              onStatusChange(news.idActualite!, value)
-            }
+      </CardHeader>
+      <CardContent className="pb-3">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+          {news.description || "Aucune description"}
+        </p>
+        
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(news)}
+            className="flex items-center gap-1"
           >
-            <SelectTrigger className="w-24 h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Brouillon</SelectItem>
-              <SelectItem value="published">Publier</SelectItem>
-              <SelectItem value="archived">Archiver</SelectItem>
-            </SelectContent>
-          </Select>
+            <Edit className="h-3 w-3" />
+            Modifier
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onManageMedia(news)}
+            className="flex items-center gap-1"
+          >
+            <ImageIcon className="h-3 w-3" />
+            Médias
+          </Button>
+          
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onDelete(news.idActualite!)}
+            className="flex items-center gap-1"
+          >
+            <Trash2 className="h-3 w-3" />
+            Supprimer
+          </Button>
+        </div>
+
+        {/* Boutons de changement de statut */}
+        <div className="flex flex-wrap gap-1 mt-3">
+          {news.statut !== "published" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onStatusChange(news.idActualite!, "published")}
+              className="text-xs h-7"
+            >
+              Publier
+            </Button>
+          )}
+          {news.statut !== "draft" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onStatusChange(news.idActualite!, "draft")}
+              className="text-xs h-7"
+            >
+              Brouillon
+            </Button>
+          )}
+          {news.statut !== "archived" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onStatusChange(news.idActualite!, "archived")}
+              className="text-xs h-7"
+            >
+              Archiver
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

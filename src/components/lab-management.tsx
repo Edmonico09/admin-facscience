@@ -1,6 +1,6 @@
 "use client"
 
-import {  useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,20 +26,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Plus, Search, Edit, Trash2, FlaskConical, X, User } from "lucide-react"
+import { Plus, Search, Edit, Trash2, FlaskConical, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { addDescription, deleteDescription } from "@/services/api/labo.api"
 import { DescriptionItem, Laboratory } from "@/services/types/labo"
 import { useLabo } from "@/hooks/useLabo"
 
-
 export function LabManagement() {
   
-  const {mentions, persons, laboratories, createLaboratory ,updateLabos , removeLabos} = useLabo();
+  const { mentions, persons, laboratories, createLaboratory, updateLabos, removeLabos } = useLabo();
       
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedMention, setSelectedMention] = useState<string>("all")
-  // const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingLab, setEditingLab] = useState<Laboratory | null>(null)
@@ -48,29 +45,94 @@ export function LabManagement() {
     mentionRattachement: "",
     responsable: "",
     description: [
-      {cle: "", valeur: "" },
-      {cle: "", valeur: "" },
+      { cle: "", valeur: "" },
+      { cle: "", valeur: "" },
     ] as DescriptionItem[],
   })
   const { toast } = useToast()
 
-const filteredLaboratories = laboratories.filter((lab) => {
-  const matchesSearch =
-    lab.nomLabo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentions
-      .find((m) => m.toString() === lab.mentionRattachement)
-      ?.nom_mention.toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-    persons
-      .find((p) => p.toString() === lab.responsable)
-      ?.nom.toLowerCase()
-      .includes(searchTerm.toLowerCase());
+  // Debug des données
+  useEffect(() => {
+    console.log('🔍 Mentions dans le composant:', mentions);
+    console.log('🔍 Laboratoires dans le composant:', laboratories);
+  }, [mentions, laboratories]);
 
-  const matchesMention = selectedMention === "all" || lab.mentionRattachement === selectedMention;
+  // Fonction pour transformer les descriptions en string formatée
+  const formatDescriptionToString = (descriptions: DescriptionItem[]): string => {
+    return descriptions
+      .filter(item => item.cle?.trim() && item.valeur?.trim())
+      .map(item => `${item.cle}: ${item.valeur}`)
+      .join('; ');
+  };
 
-  return matchesSearch && matchesMention;
-});
+  // Fonction pour parser la string en tableau de descriptions
+  const parseDescriptionToArray = (description: string | null | undefined): DescriptionItem[] => {
+    if (!description || typeof description !== 'string') {
+      return [{ cle: "", valeur: "" }, { cle: "", valeur: "" }];
+    }
+    
+    const items = description.split(';')
+      .map(item => {
+        const [cle, ...valeurParts] = item.split(':');
+        return {
+          cle: cle?.trim() || '',
+          valeur: valeurParts.join(':').trim() || ''
+        };
+      })
+      .filter(item => item.cle || item.valeur);
+    
+    return items.length > 0 ? items : [{ cle: "", valeur: "" }, { cle: "", valeur: "" }];
+  };
 
+  // Adapter les données pour le backend
+  const adaptLabForBackend = (frontendData: any) => {
+    return {
+      nomLabo: frontendData.nomLabo,
+      mentionRattachement: frontendData.mentionRattachement ? parseInt(frontendData.mentionRattachement) : null,
+      description: formatDescriptionToString(frontendData.description),
+      abbreviation: "",
+      ecoleDoctoraleRattachement: null
+    };
+  };
+
+  // CORRECTION : Fonction ultra-sécurisée pour la recherche
+  const getMentionNameForSearch = (mentionId: string | number | null | undefined): string => {
+    try {
+      if (mentionId == null || mentionId === undefined || mentionId === '') return "";
+      
+      const mentionIdStr = String(mentionId);
+      const mention = Array.isArray(mentions) 
+        ? mentions.find((m) => m?.id_mention?.toString() === mentionIdStr)
+        : null;
+      
+      return mention?.nom_mention?.toLowerCase?.() || "";
+    } catch (error) {
+      console.error('Erreur dans getMentionNameForSearch:', error);
+      return "";
+    }
+  };
+
+  // CORRECTION : Filtrage sécurisé
+  const filteredLaboratories = (laboratories || []).filter((lab) => {
+    if (!lab || typeof lab !== 'object') return false;
+    
+    try {
+      const labName = lab.nomLabo?.toLowerCase?.() || "";
+      const mentionName = getMentionNameForSearch(lab.mentionRattachement);
+      
+      const matchesSearch =
+        labName.includes(searchTerm.toLowerCase()) ||
+        mentionName.includes(searchTerm.toLowerCase());
+
+      const labMentionStr = lab.mentionRattachement?.toString?.() || "";
+      const matchesMention = selectedMention === "all" || labMentionStr === selectedMention;
+
+      return matchesSearch && matchesMention;
+    } catch (error) {
+      console.error('Erreur lors du filtrage du lab:', lab, error);
+      return false;
+    }
+  });
 
   const resetForm = () => {
     setFormData({
@@ -78,8 +140,8 @@ const filteredLaboratories = laboratories.filter((lab) => {
       mentionRattachement: "",
       responsable: "",
       description: [
-        {  cle: "", valeur: "" },
-        {  cle: "", valeur: "" },
+        { cle: "", valeur: "" },
+        { cle: "", valeur: "" },
       ],
     })
   }
@@ -95,84 +157,65 @@ const filteredLaboratories = laboratories.filter((lab) => {
     });
   };
 
-
-const removeDescriptionField = async (index: number, cle: string) => {
-  if (formData.description.length <= 2) {
-    toast({
-      title: "Attention",
-      description: "Au moins 2 champs de description sont requis",
-      variant: "destructive",
-    })
-    return
-  }
-  
-  if (editingLab?.idLabo) {
-    try {
-      await deleteDescription(editingLab.idLabo, cle);
-      setFormData({
-        ...formData,
-        description: formData.description.filter((_, i) => i !== index),
-      })
-    } catch(err) {
+  const removeDescriptionField = (index: number) => {
+    if (formData.description.length <= 2) {
       toast({
-        title: "Erreur",
-        description: (err as Error).message,
+        title: "Attention",
+        description: "Au moins 2 champs de description sont requis",
         variant: "destructive",
       })
+      return
     }
-  } else {
-    // Mode ajout - suppression locale uniquement
+    
     setFormData({
       ...formData,
       description: formData.description.filter((_, i) => i !== index),
     })
   }
-}
-// const updateDescriptionField = async (idLabo: number, itemId: string, field: "cle" | "valeur", value: string) => {
-//   // 1️⃣ Mise à jour locale
-//   const updatedDescription = formData.description.map((item) =>
-//     item.id === itemId ? { ...item, [field]: value } : item
-//   );
 
-//   setFormData({
-//     ...formData,
-//     description: updatedDescription,
-//   });
-
-//   // 2️⃣ Envoi à l'API
-//   const itemToUpdate = updatedDescription.find((item) => item.id === itemId);
-//   if (itemToUpdate) {
-//     try {
-//       await updateDescription(idLabo, itemToUpdate);
-//     } catch (error) {
-//       console.error("Erreur lors de la mise à jour de la description :", error);
-//     }
-//   }
-// };
-
-// Créer une fonction spécialisée pour l'édition :
-const addDescriptionFieldInEditMode = async () => {
-  if (editingLab?.idLabo) {
-    // Mode édition - appel API + mise à jour locale
-    const newField: DescriptionItem = { cle: "", valeur: "" };
+  const handleAdd = async () => {
     try {
-      await addDescription(editingLab.idLabo, newField);
-      setFormData({
-        ...formData,
-        description: [...formData.description, newField],
-      });
-      toast({ title: "Succès", description: "Description ajoutée" });
-    } catch (err) {
-      toast({ title: "Erreur", description: (err as Error).message, variant: "destructive" });
-    }
-  } else {
-    addDescriptionField();
-  }
-};
+      if (!formData.nomLabo || !formData.mentionRattachement) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez remplir tous les champs obligatoires",
+          variant: "destructive",
+        });
+        return;
+      }
 
-const handleAdd = async () => {
-  try {
-    if (!formData.nomLabo || !formData.mentionRattachement || !formData.responsable) {
+      const backendData = adaptLabForBackend(formData);
+      await createLaboratory(backendData);
+      setIsAddDialogOpen(false);
+      resetForm();
+
+      toast({
+        title: "Succès",
+        description: "Laboratoire ajouté avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du laboratoire:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le laboratoire. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEdit = (lab: Laboratory) => {
+    setEditingLab(lab)
+    setFormData({
+      nomLabo: lab.nomLabo || "",
+      mentionRattachement: lab.mentionRattachement?.toString() || "",
+      responsable: "",
+      description: parseDescriptionToArray(lab.description as string)
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleUpdate = async () => {
+    if (!formData.nomLabo || !formData.mentionRattachement || !editingLab) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -181,132 +224,67 @@ const handleAdd = async () => {
       return;
     }
 
-    // Filtrer les champs description vides
-    const validDescriptions = formData.description.filter(
-      (item) => item.cle.trim() && item.valeur.trim()
-    );
+    const backendData = adaptLabForBackend(formData);
 
-    const newLab: Laboratory = {
-      nomLabo: formData.nomLabo,
-      mentionRattachement: formData.mentionRattachement,
-      responsable: formData.responsable,
-      description: validDescriptions.map((item) => ({
-        ...item,
-      })),
-    };
+    try {
+      await updateLabos(editingLab.idLabo!, backendData);
+      setIsEditDialogOpen(false);
+      setEditingLab(null);
+      resetForm();
 
-    await createLaboratory(newLab);
-    setIsAddDialogOpen(false);
-    resetForm();
-
-    toast({
-      title: "Succès",
-      description: "Laboratoire ajouté avec succès",
-    });
-  } catch (error) {
-    console.error("Erreur lors de l'ajout du laboratoire:", error);
-    toast({
-      title: "Erreur",
-      description: "Impossible d'ajouter le laboratoire. Veuillez réessayer.",
-      variant: "destructive",
-    });
-  }
-};
-
-  const handleEdit = (lab: Laboratory) => {
-    setEditingLab(lab)
-    setFormData({
-      nomLabo: lab.nomLabo,
-      mentionRattachement: lab.mentionRattachement.toString(),
-      responsable: lab.responsable.toString(),
-      description:
-        lab.description.length > 0
-          ? [...lab.description]
-          : [
-              { cle: "", valeur: "" },
-              { cle: "", valeur: "" },
-            ],
-    })
-    setIsEditDialogOpen(true)
-  }
-
- const handleUpdate = async () => {
-  if (!formData.nomLabo || !formData.mentionRattachement || !formData.responsable || !editingLab) {
-    toast({
-      title: "Erreur",
-      description: "Veuillez remplir tous les champs obligatoires",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  // Filter out empty description fields
-  const validDescriptions = formData.description.filter(
-    (item) => item.cle.trim() && item.valeur.trim()
-  );
-
-  const updatedLabData: Laboratory = {
-    ...editingLab,
-    nomLabo: formData.nomLabo,
-    mentionRattachement: formData.mentionRattachement,
-    responsable: formData.responsable,
-    description: validDescriptions,
+      toast({
+        title: "Succès",
+        description: "Laboratoire mis à jour avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de mettre à jour le laboratoire",
+        variant: "destructive",
+      });
+    }
   };
 
-  try {
-    await updateLabos(editingLab.idLabo!, updatedLabData);
-
-
-    setIsEditDialogOpen(false);
-    setEditingLab(null);
-    resetForm();
-
-    toast({
-      title: "Succès",
-      description: "Laboratoire mis à jour avec succès",
-    });
-  } catch (error: any) {
-    toast({
-      title: "Erreur",
-      description: error.message || "Impossible de mettre à jour le laboratoire",
-      variant: "destructive",
-    });
-  }
-};
-
   const handleDelete = async (idLabo: number) => {
-  try {
-    await removeLabos(idLabo);
+    try {
+      await removeLabos(idLabo);
+      toast({
+        title: "Succès",
+        description: "Laboratoire supprimé avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer le laboratoire",
+        variant: "destructive",
+      });
+    }
+  };
 
+  // CORRECTION : Fonction ultra-sécurisée pour obtenir le nom de la mention
+  const getMentionName = (mentionId: string | number | null | undefined) => {
+    try {
+      if (mentionId == null || mentionId === undefined || mentionId === '') return "Non spécifiée";
+      
+      const mentionIdStr = String(mentionId);
+      const mention = Array.isArray(mentions) 
+        ? mentions.find((m) => m?.id_mention?.toString() === mentionIdStr)
+        : null;
+      
+      if (!mention) return "Inconnue";
+      
+      const nom = mention.nom_mention || "Sans nom";
+      const abbreviation = mention.abbreviation || "";
+      
+      return abbreviation ? `${nom} (${abbreviation})` : nom;
+    } catch (error) {
+      console.error('Erreur dans getMentionName:', error);
+      return "Erreur";
+    }
+  };
 
-    toast({
-      title: "Succès",
-      description: "Laboratoire supprimé avec succès",
-    });
-  } catch (error: any) {
-    toast({
-      title: "Erreur",
-      description: error.message || "Impossible de supprimer le laboratoire",
-      variant: "destructive",
-    });
-  }
-};
-
-  // const getStatusBadge = (statut: "active" | "inactive") => {
-  //   return (
-  //     <Badge variant={statut === "active" ? "default" : "secondary"}>{statut === "active" ? "Actif" : "Inactif"}</Badge>
-  //   )
-  // }
-
-  // const getMentionName = (mentionId: number) => {
-  //   const mention = mentions.find((m) => m.id === mentionId)
-  //   return mention ? `${mention.nom} (${mention.code})` : "Inconnue"
-  // }
-
-  // const getPersonName = (personId: number) => {
-  //   const person = persons.find((p) => p.id === personId)
-  //   return person ? `${person.prenom} ${person.nom}` : "Inconnu"
-  // }
+  // CORRECTION : Rendu sécurisé des mentions dans le select
+  const safeMentions = Array.isArray(mentions) ? mentions : [];
 
   return (
     <div className="space-y-6">
@@ -317,15 +295,9 @@ const handleAdd = async () => {
         </div>
         <div className="hidden md:flex items-center gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-university-primary">{laboratories.length}</div>
+            <div className="text-2xl font-bold text-university-primary">{(laboratories || []).length}</div>
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
-          {/* <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {laboratories.filter((l) => l.statut === "active").length}
-            </div>
-            <div className="text-xs text-muted-foreground">Actifs</div>
-          </div> */}
         </div>
       </div>
 
@@ -360,85 +332,71 @@ const handleAdd = async () => {
                       placeholder="Ex: Laboratoire de Recherche en Intelligence Artificielle"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="mention">Mention de rattachement *</Label>
-                      <Select
-                        value={formData.mentionRattachement}
-                        onValueChange={(value) => setFormData({ ...formData, mentionRattachement: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner une mention" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {mentions.map((mention) => (
-                            <SelectItem key={mention.id_mention} value={mention.id_mention!.toString()}>
-                              {mention.nom_mention} ({mention.abbreviation})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="responsable">Responsable *</Label>
-                      <Select
-                        value={formData.responsable}
-                        onValueChange={(value) => setFormData({ ...formData, responsable: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un responsable" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {persons.map((person) => (
-                            <SelectItem key={person.id} value={person.id.toString()}>
-                              {person.prenom} {person.nom}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="mention">Mention de rattachement *</Label>
+                    <Select
+                      value={formData.mentionRattachement}
+                      onValueChange={(value) => setFormData({ ...formData, mentionRattachement: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une mention" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {safeMentions.map((mention) => (
+                          <SelectItem 
+                            key={mention.id_mention} 
+                            value={mention.id_mention?.toString() || "default-value"}
+                          >
+                            {mention.nom_mention} ({mention.abbreviation})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label>Description (Clé-Valeur)</Label>
-               <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addDescriptionFieldInEditMode}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Ajouter
-                  </Button>
-
-              </div>
-          {formData.description.map((item, index) => (
-            <div key={index} className="flex gap-2">
-              <Input
-                placeholder="Clé"
-                value={item.cle}
-                onChange={(e) => {
-                  const updated = [...formData.description];
-                  updated[index] = { ...updated[index], cle: e.target.value };
-                  setFormData({ ...formData, description: updated });
-                }}
-              />
-              <Input
-                placeholder="Valeur"
-                value={item.valeur}
-                onChange={(e) => {
-                  const updated = [...formData.description];
-                  updated[index] = { ...updated[index], valeur: e.target.value };
-                  setFormData({ ...formData, description: updated });
-                }}
-              />
-              <Button onClick={() => removeDescriptionField(index , item.cle )}>
-                Supprimer
-              </Button>
-            </div>
-          ))}
-            </div>
-
+                    <div className="flex items-center justify-between">
+                      <Label>Description (Clé-Valeur)</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addDescriptionField}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Ajouter
+                      </Button>
+                    </div>
+                    {formData.description.map((item, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          placeholder="Clé"
+                          value={item.cle}
+                          onChange={(e) => {
+                            const updated = [...formData.description];
+                            updated[index] = { ...updated[index], cle: e.target.value };
+                            setFormData({ ...formData, description: updated });
+                          }}
+                        />
+                        <Input
+                          placeholder="Valeur"
+                          value={item.valeur}
+                          onChange={(e) => {
+                            const updated = [...formData.description];
+                            updated[index] = { ...updated[index], valeur: e.target.value };
+                            setFormData({ ...formData, description: updated });
+                          }}
+                        />
+                        <Button 
+                          type="button"
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => removeDescriptionField(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -470,34 +428,27 @@ const handleAdd = async () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes mentions</SelectItem>
-                {mentions.map((mention) => (
-                  <SelectItem key={mention.id_mention} value={mention.id_mention!.toString()}>
+                {safeMentions.map((mention) => (
+                  <SelectItem 
+                    key={mention.id_mention} 
+                    value={mention.id_mention?.toString() || "default-value"}
+                  >
                     {mention.nom_mention}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {/* <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Tous statuts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous statuts</SelectItem>
-                <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="inactive">Inactif</SelectItem>
-              </SelectContent>
-            </Select> */}
           </div>
 
           <div className="space-y-4">
             {filteredLaboratories.length === 0 ? (
               <div className="text-center py-8">
                 <FlaskConical className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                {/* <p className="text-muted-foreground">
-                  {searchTerm || selectedMention !== "all" || selectedStatus !== "all"
+                <p className="text-muted-foreground">
+                  {searchTerm || selectedMention !== "all"
                     ? "Aucun laboratoire trouvé pour les filtres sélectionnés"
                     : "Aucun laboratoire disponible"}
-                </p> */}
+                </p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -506,18 +457,14 @@ const handleAdd = async () => {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg text-university-primary mb-2">{lab.nomLabo}</CardTitle>
+                          <CardTitle className="text-lg text-university-primary mb-2">
+                            {lab.nomLabo || "Nom non spécifié"}
+                          </CardTitle>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <FlaskConical className="h-4 w-4" />
-                              <span>{(lab.mentionRattachement)}</span>
+                              <span>{getMentionName(lab.mentionRattachement)}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              <span>{(lab.responsable)}</span>
-                            </div>
-                            {/* <Badge variant="outline">{lab.nombreChercheurs} chercheurs</Badge>
-                            {getStatusBadge(lab.statut)} */}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -553,22 +500,23 @@ const handleAdd = async () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {lab.description.length > 0 && (
+                      {lab.description && (
                         <div className="space-y-2">
                           <h4 className="font-medium text-sm text-foreground">Informations détaillées</h4>
                           <div className="grid gap-2">
-                            {lab.description.map((desc) => (
-                              <div key={desc.cle} className="flex gap-3 text-sm">
-                                <span className="font-medium text-university-primary min-w-[100px]">{desc.cle}:</span>
-                                <span className="text-muted-foreground flex-1">{desc.valeur}</span>
-                              </div>
+                            {parseDescriptionToArray(lab.description as string).map((desc, index) => (
+                              desc.cle && desc.valeur && (
+                                <div key={index} className="flex gap-3 text-sm">
+                                  <span className="font-medium text-university-primary min-w-[100px]">
+                                    {desc.cle}:
+                                  </span>
+                                  <span className="text-muted-foreground flex-1">{desc.valeur}</span>
+                                </div>
+                              )
                             ))}
                           </div>
                         </div>
                       )}
-                      {/* <div className="flex items-center justify-between mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
-                        <span>Créé le {new Date(lab.dateCreation).toLocaleDateString("fr-FR")}</span>
-                      </div> */}
                     </CardContent>
                   </Card>
                 ))}
@@ -578,6 +526,7 @@ const handleAdd = async () => {
         </CardContent>
       </Card>
 
+      {/* Le reste du code du dialog d'édition reste inchangé */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -594,75 +543,70 @@ const handleAdd = async () => {
                 placeholder="Ex: Laboratoire de Recherche en Intelligence Artificielle"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-mention">Mention de rattachement *</Label>
-                <Select
-                  value={formData.mentionRattachement}
-                  onValueChange={(value) => setFormData({ ...formData, mentionRattachement: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une mention" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mentions.map((mention) => (
-                      <SelectItem key={mention.id_mention} value={mention.id_mention!.toString()}>
-                        {mention.nom_mention} ({mention.abbreviation})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="edit-responsable">Responsable *</Label>
-                <Select
-                  value={formData.responsable}
-                  onValueChange={(value) => setFormData({ ...formData, responsable: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un responsable" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {persons.map((person) => (
-                      <SelectItem key={person.id} value={person.id.toString()}>
-                        {person.prenom} {person.nom}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-mention">Mention de rattachement *</Label>
+              <Select
+                value={formData.mentionRattachement}
+                onValueChange={(value) => setFormData({ ...formData, mentionRattachement: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une mention" />
+                </SelectTrigger>
+                <SelectContent>
+                  {safeMentions.map((mention) => (
+                    <SelectItem 
+                      key={mention.id_mention} 
+                      value={mention.id_mention?.toString() || "default-value"}
+                    >
+                      {mention.nom_mention} ({mention.abbreviation})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
                 <Label>Description (Clé-Valeur)</Label>
-           <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addDescriptionField}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Ajouter
-            </Button>
-
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addDescriptionField}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Ajouter
+                </Button>
               </div>
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {formData.description.map((item, index) => (
-                  <div key={item.cle} className="flex gap-2 items-start">
+                  <div key={index} className="flex gap-2 items-start">
                     <div className="flex-1 grid grid-cols-2 gap-2">
-                      {/* <Input
+                      <Input
                         placeholder="Clé (ex: Mission)"
                         value={item.cle}
-                        onChange={(e) => updateDescriptionField( "cle", e.target.value)}
+                        onChange={(e) => {
+                          const updated = [...formData.description];
+                          updated[index] = { ...updated[index], cle: e.target.value };
+                          setFormData({ ...formData, description: updated });
+                        }}
                       />
                       <Input
                         placeholder="Valeur (ex: Recherche en IA)"
                         value={item.valeur}
-                        onChange={(e) => updateDescriptionField("valeur", e.target.value)}
-                      /> */}
+                        onChange={(e) => {
+                          const updated = [...formData.description];
+                          updated[index] = { ...updated[index], valeur: e.target.value };
+                          setFormData({ ...formData, description: updated });
+                        }}
+                      />
                     </div>
                     {formData.description.length > 2 && (
-                      <Button type="button" variant="outline" size="sm" onClick={() => removeDescriptionField(index , item.cle)}>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => removeDescriptionField(index)}
+                      >
                         <X className="h-4 w-4" />
                       </Button>
                     )}

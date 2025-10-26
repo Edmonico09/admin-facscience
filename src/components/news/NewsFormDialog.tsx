@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ImageIcon, X } from "lucide-react"
 import { Actualite, Category } from "@/services/types/event"
 
 interface NewsFormDialogProps {
@@ -22,8 +21,6 @@ interface NewsFormDialogProps {
   isEdit?: boolean
   onFormChange: (data: Actualite) => void
   onSubmit: () => void
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onRemoveMedia: (mediaId: number) => void
 }
 
 export function NewsFormDialog({
@@ -34,8 +31,6 @@ export function NewsFormDialog({
   isEdit = false,
   onFormChange,
   onSubmit,
-  onFileChange,
-  onRemoveMedia,
 }: NewsFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +40,7 @@ export function NewsFormDialog({
           <DialogDescription>
             {isEdit
               ? "Modifiez les informations de l'actualité sélectionnée."
-              : "Remplissez les informations pour créer une nouvelle actualité."}
+              : "Remplissez les informations pour créer une nouvelle actualité. Vous pourrez ajouter des médias après la création."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -82,7 +77,7 @@ export function NewsFormDialog({
             <Label htmlFor="description">Description *</Label>
             <Textarea
               id="description"
-              value={formData.description}
+              value={formData.description || ''}
               onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
               placeholder="Description courte de l'actualité"
               rows={2}
@@ -92,7 +87,7 @@ export function NewsFormDialog({
             <Label htmlFor="contenu">Contenu *</Label>
             <Textarea
               id="contenu"
-              value={formData.contenu}
+              value={formData.contenu || ''}
               onChange={(e) => onFormChange({ ...formData, contenu: e.target.value })}
               placeholder="Contenu détaillé de l'actualité"
               rows={4}
@@ -122,56 +117,10 @@ export function NewsFormDialog({
             <Label htmlFor="lieu">Lieu</Label>
             <Input
               id="lieu"
-              value={formData.lieu}
+              value={formData.lieu || ''}
               onChange={(e) => onFormChange({ ...formData, lieu: e.target.value })}
               placeholder="Lieu de l'événement"
             />
-          </div>
-          <div className="grid gap-2">
-            <Label>Médias</Label>
-            <div className="space-y-2">
-              <Button asChild variant="outline" className="w-full bg-transparent">
-                <label htmlFor="media-upload" className="cursor-pointer flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4" />
-                  Ajouter un média
-                  <input
-                    id="media-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={onFileChange}
-                  />
-                </label>
-              </Button>
-
-              {formData.medias.length > 0 && (
-                <div className="grid grid-cols-2 gap-2">
-                  {formData.medias.map((media) => (
-                    <div key={media.idMedia} className="relative border rounded-lg p-2">
-                      <img
-                        src={media.chemin || "/placeholder.svg"}
-                        alt={media.media}
-                        className="w-full h-20 object-cover rounded"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-1 right-1 h-6 w-6 p-0"
-                        onClick={() => {
-                          if (media.idMedia !== undefined) {
-                            onRemoveMedia(media.idMedia)
-                          }
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                      <p className="text-xs text-muted-foreground mt-1 truncate">{media.media}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         </div>
         <DialogFooter>
@@ -179,7 +128,7 @@ export function NewsFormDialog({
             Annuler
           </Button>
           <Button onClick={onSubmit} className="bg-university-primary hover:bg-university-primary/90">
-            {isEdit ? "Mettre à jour" : "Ajouter"}
+            {isEdit ? "Mettre à jour" : "Créer l'actualité"}
           </Button>
         </DialogFooter>
       </DialogContent>

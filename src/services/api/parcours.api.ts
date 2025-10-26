@@ -93,8 +93,8 @@ export const create = async (newParcour: Parcours) => {
 
 export const update = async (id_:number, updateParcours: Partial<Parcours>) => {
   try {
-    const response = await fetch(`${baseURL}/mention/${id_}`, {
-      method: 'PATCH',
+    const response = await fetch(`${baseURL}/api/Parcours/${id_}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },

@@ -1,23 +1,26 @@
-import useAuth from "@/context/auth-context";
+import { useAuth } from "../context/auth-context";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function LoginForm() {
   const { login, loading } = useAuth();
-
   const [identifiant, setIdentifiant] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Récupérer l'URL de redirection après login
+  const from = location.state?.from?.pathname || "/";
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
       await login({ identifiant: identifiant.trim(), password });
-      // redirection vers le dashboard après login réussi
-      navigate("/", { replace: true });
+      // Redirection vers la page demandée ou le dashboard
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message || "Erreur de connexion");
     }
@@ -34,6 +37,7 @@ export default function LoginForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* ... le reste du formulaire reste identique ... */}
           <div>
             <label className="text-sm block mb-1">Identifiant</label>
             <input
@@ -71,8 +75,8 @@ export default function LoginForm() {
             <button
               type="button"
               onClick={() => {
-                setIdentifiant("alice");
-                setPassword("password123");
+                setIdentifiant("admin");
+                setPassword("admin");
               }}
               className="w-full sm:w-auto text-sm underline text-zinc-600 dark:text-zinc-400 hover:text-university-primary transition"
             >

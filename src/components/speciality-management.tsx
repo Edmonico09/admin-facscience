@@ -1,12 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -30,140 +28,120 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Search, Edit, Trash2, Layers } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-
-// Type de données
-interface Specialite {
-  id: number
-  nom: string
-  description: string
-  parcours: string
-  mention: string
-  statut: "active" | "inactive"
-}
-
-// Mock data
-const mockSpecialites: Specialite[] = [
-  {
-    id: 1,
-    nom: "Machine Learning",
-    description: "Spécialité axée sur l’apprentissage automatique et l’IA",
-    parcours: "Informatique",
-    mention: "Sciences et Technologies",
-    statut: "active",
-  },
-  {
-    id: 2,
-    nom: "Analyse Numérique",
-    description: "Spécialité en mathématiques appliquées et calcul scientifique",
-    parcours: "Mathématiques",
-    mention: "Sciences Fondamentales",
-    statut: "active",
-  },
-  {
-    id: 3,
-    nom: "Biotechnologies",
-    description: "Spécialité dans les sciences du vivant et la bio-ingénierie",
-    parcours: "Biologie",
-    mention: "Sciences de la Vie",
-    statut: "inactive",
-  },
-]
+import { Specialite, getSpecialites, createSpecialite, updateSpecialite, deleteSpecialite } from "../../src/services/api/specialite.api"
 
 export function SpecialityManagement() {
-  const [specialites, setSpecialites] = useState<Specialite[]>(mockSpecialites)
+  const [specialites, setSpecialites] = useState<Specialite[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingSpecialite, setEditingSpecialite] = useState<Specialite | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     nom: "",
-    description: "",
-    parcours: "",
-    mention: "",
-    statut: "active" as "active" | "inactive",
   })
   const { toast } = useToast()
 
-
-  const getStatusBadge = (statut: "active" | "inactive") => {
-    return (
-      <Badge variant={statut === "active" ? "default" : "secondary"}>
-        {statut === "active" ? "Active" : "Inactive"}
-      </Badge>
-    )
+  // Charger les spécialités
+  const loadSpecialites = async () => {
+    setIsLoading(true)
+    try {
+      const data = await getSpecialites()
+      setSpecialites(data)
+    } catch (error) {
+      console.error('Erreur lors du chargement des spécialités:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les spécialités",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  useEffect(() => {
+    loadSpecialites()
+  }, [])
+
   // Filtrage
   const filteredSpecialites = specialites.filter(
-    (s) =>
-      s.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.parcours.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.mention.toLowerCase().includes(searchTerm.toLowerCase()),
+    (s) => s.nom.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   // Reset form
-  const resetForm = () =>
-    setFormData({
-      nom: "",
-      description: "",
-      parcours: "",
-      mention: "",
-      statut: "active",
-    })
+  const resetForm = () => setFormData({ nom: "" })
 
   // Ajouter
-  const handleAdd = () => {
-    if (!formData.nom || !formData.parcours || !formData.mention) {
-      toast({ title: "Erreur", description: "Champs obligatoires manquants", variant: "destructive" })
+  const handleAdd = async () => {
+    if (!formData.nom) {
+      toast({ title: "Erreur", description: "Le nom est obligatoire", variant: "destructive" })
       return
     }
 
-    const newSpecialite: Specialite = {
-      id: Math.max(...specialites.map((s) => s.id)) + 1,
-      ...formData,
+    try {
+      const newSpecialite = await createSpecialite(formData)
+      setSpecialites(prev => [...prev, newSpecialite])
+      setIsAddDialogOpen(false)
+      resetForm()
+      toast({ title: "Succès", description: "Spécialité ajoutée avec succès" })
+    } catch (error) {
+      console.error('Erreur lors de la création:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter la spécialité",
+        variant: "destructive",
+      })
     }
-
-    setSpecialites([...specialites, newSpecialite])
-    setIsAddDialogOpen(false)
-    resetForm()
-    toast({ title: "Succès", description: "Spécialité ajoutée avec succès" })
   }
 
   // Modifier
   const handleEdit = (specialite: Specialite) => {
     setEditingSpecialite(specialite)
-    setFormData({
-      nom: specialite.nom,
-      description: specialite.description,
-      parcours: specialite.parcours,
-      mention: specialite.mention,
-      statut: specialite.statut,
-    })
+    setFormData({ nom: specialite.nom })
     setIsEditDialogOpen(true)
   }
 
   // Mettre à jour
-  const handleUpdate = () => {
-    if (!formData.nom || !formData.parcours || !formData.mention || !editingSpecialite) {
-      toast({ title: "Erreur", description: "Champs obligatoires manquants", variant: "destructive" })
+  const handleUpdate = async () => {
+    if (!formData.nom || !editingSpecialite) {
+      toast({ title: "Erreur", description: "Le nom est obligatoire", variant: "destructive" })
       return
     }
 
-    setSpecialites((prev) =>
-      prev.map((s) =>
-        s.id === editingSpecialite.id ? { ...editingSpecialite, ...formData } : s,
-      ),
-    )
-
-    setIsEditDialogOpen(false)
-    setEditingSpecialite(null)
-    resetForm()
-    toast({ title: "Succès", description: "Spécialité mise à jour avec succès" })
+    try {
+      const updatedSpecialite = await updateSpecialite(editingSpecialite.id, formData)
+      setSpecialites(prev =>
+        prev.map((s) => (s.id === editingSpecialite.id ? updatedSpecialite : s))
+      )
+      setIsEditDialogOpen(false)
+      setEditingSpecialite(null)
+      resetForm()
+      toast({ title: "Succès", description: "Spécialité mise à jour avec succès" })
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la spécialité",
+        variant: "destructive",
+      })
+    }
   }
 
   // Supprimer
-  const handleDelete = (id: number) => {
-    setSpecialites(specialites.filter((s) => s.id !== id))
-    toast({ title: "Succès", description: "Spécialité supprimée avec succès" })
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteSpecialite(id)
+      setSpecialites(prev => prev.filter((s) => s.id !== id))
+      toast({ title: "Succès", description: "Spécialité supprimée avec succès" })
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la spécialité",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -194,29 +172,18 @@ export function SpecialityManagement() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Nouvelle Spécialité</DialogTitle>
-                  <DialogDescription>Remplissez les informations</DialogDescription>
+                  <DialogDescription>Entrez le nom de la nouvelle spécialité</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <Label>Nom *</Label>
-                  <Input
-                    value={formData.nom}
-                    onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                  />
-                  <Label>Description</Label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                  <Label>Parcours *</Label>
-                  <Input
-                    value={formData.parcours}
-                    onChange={(e) => setFormData({ ...formData, parcours: e.target.value })}
-                  />
-                  <Label>Mention *</Label>
-                  <Input
-                    value={formData.mention}
-                    onChange={(e) => setFormData({ ...formData, mention: e.target.value })}
-                  />
+                  <div className="grid gap-2">
+                    <Label htmlFor="nom">Nom de la spécialité *</Label>
+                    <Input
+                      id="nom"
+                      value={formData.nom}
+                      onChange={(e) => setFormData({ nom: e.target.value })}
+                      placeholder="Ex: Intelligence Artificielle"
+                    />
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -240,110 +207,98 @@ export function SpecialityManagement() {
             />
           </div>
 
-          {/* Table Desktop */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Parcours</TableHead>
-                  <TableHead>Mention</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSpecialites.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell>{s.nom}</TableCell>
-                    <TableCell>{s.parcours}</TableCell>
-                    <TableCell>{s.mention}</TableCell>
-                    <TableCell className="truncate max-w-xs">{s.description}</TableCell>
-                    <TableCell>
-                      <Badge variant={s.statut === "active" ? "default" : "secondary"}>
-                        {getStatusBadge(s.statut)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(s)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Supprimer {s.nom} ?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(s.id)}
-                              className="bg-destructive hover:bg-destructive/90"
-                            >
-                              Supprimer
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="md:hidden space-y-4">
-            {filteredSpecialites.map((s) => (
-              <div key={s.id} className="border rounded-lg p-4 shadow-sm">
-                <div className="flex justify-between">
-                  <span className="font-bold">{s.nom}</span>
-                  <Badge variant={s.statut === "active" ? "default" : "secondary"}>
-                    {s.statut}
-                  </Badge>
-                </div>
-                <div className="flex px-2 my-1 text-sm text-muted-foreground">{s.description}</div>
-                <div className="flex px-2 my-1 text-sm">Parcours: {s.parcours}</div>
-                <div className="flex px-2 my-1 text-sm">Mention: {s.mention}</div>
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground text-end">{s.description}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Mention:</span>
-                    <span className="text-sm font-medium text-end overflow-auto">{s.mention}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Parcours:</span>
-                    <span className="text-sm font-medium">{s.parcours}</span>
-                  </div>
-                </div> 
-                <div className="grid grid-cols-2 gap-1 mt-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(s)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Modifier
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(s.id)}
-                    className="text-red-500"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Supprimer
-                  </Button>
-                </div>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p>Chargement des spécialités...</p>
+            </div>
+          ) : (
+            <>
+              {/* Table Desktop */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSpecialites.map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium">{s.nom}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleEdit(s)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Êtes-vous sûr de vouloir supprimer la spécialité "{s.nom}" ? Cette action est irréversible.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(s.id)}
+                                    className="bg-destructive hover:bg-destructive/90"
+                                  >
+                                    Supprimer
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            ))}
-          </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-4">
+                {filteredSpecialites.map((s) => (
+                  <div key={s.id} className="border rounded-lg p-4 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="font-bold text-lg">{s.nom}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(s)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Modifier
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(s.id)}
+                        className="text-red-500"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {!isLoading && filteredSpecialites.length === 0 && (
+            <div className="text-center py-8">
+              <Layers className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                {searchTerm ? "Aucune spécialité trouvée pour votre recherche" : "Aucune spécialité disponible"}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -352,28 +307,20 @@ export function SpecialityManagement() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Modifier la Spécialité</DialogTitle>
+            <DialogDescription>
+              Modifiez le nom de la spécialité "{editingSpecialite?.nom}"
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <Label>Nom *</Label>
-            <Input
-              value={formData.nom}
-              onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-            />
-            <Label>Description</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-            <Label>Parcours *</Label>
-            <Input
-              value={formData.parcours}
-              onChange={(e) => setFormData({ ...formData, parcours: e.target.value })}
-            />
-            <Label>Mention *</Label>
-            <Input
-              value={formData.mention}
-              onChange={(e) => setFormData({ ...formData, mention: e.target.value })}
-            />
+            <div className="grid gap-2">
+              <Label htmlFor="edit-nom">Nom de la spécialité *</Label>
+              <Input
+                id="edit-nom"
+                value={formData.nom}
+                onChange={(e) => setFormData({ nom: e.target.value })}
+                placeholder="Ex: Intelligence Artificielle"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>

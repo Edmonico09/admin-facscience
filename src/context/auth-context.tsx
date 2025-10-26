@@ -1,53 +1,76 @@
-import { auth } from "@/services/api/auth.api"
-import { User } from "@/services/types/user"
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useMemo,
-} from "react"
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { authReal } from '../services/api/auth.api';
+import { User } from '../services/types/user';
 
-type AuthContextType = {
-  user: User | null
-  loading: boolean
-  login: (credentials: { identifiant: string; password: string }) => Promise<User>
-  logout: () => void
+interface AuthContextType {
+  user: User | null;
+  login: (credentials: { identifiant: string; password: string }) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
+  isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(false)
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Vérifier si l'utilisateur est déjà connecté au chargement
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (credentials: { identifiant: string; password: string }) => {
-    setLoading(true)
     try {
-      const u: User = await auth(credentials)
-      console.log(u);
+      setLoading(true);
+      const response = await authReal(credentials);
       
-      setUser(u)
-      return u
+      // Stocker le token et les infos utilisateur
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response));
+      
+      setUser(response);
+    } catch (error) {
+      throw error;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  const value: AuthContextType = {
+    user,
+    login,
+    logout,
+    loading,
+    isAuthenticated: !!user,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
-  const logout = () => setUser(null)
-
-  const value = useMemo(
-    () => ({ user, loading, login, logout }),
-    [user, loading]
-  )
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export default function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error("useAuth must be used inside AuthProvider")
-  }
-  return ctx
-}
+  return context;
+};

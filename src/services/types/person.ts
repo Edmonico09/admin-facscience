@@ -1,4 +1,5 @@
 export type BasePerson = {
+    type: string;
     id : number;
     nom             : string ; 
 	email           : string ;   

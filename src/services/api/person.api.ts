@@ -1,251 +1,149 @@
 import { baseURL } from "..";
 import { BasePerson, BasePersonWithoutId } from "../types/person";
 
-function getCreateUrl(type : string){
-    switch (type) {
-        case "pat":
-          return `${baseURL}/person/add/pat`;
-        case "professeur":
-          return `${baseURL}/person/add/professeur`;
-        case "cofac":
-          return `${baseURL}/person/add/cofac`;
-        case "doyen_et_vice":
-          return `${baseURL}/person/add/doyen`;
-        default:
-          throw new Error("Type inconnu : " + type);
-      }
-}  
-
-
-function getListUrl(type : string){
-    switch (type) {
-        case "pat":
-          return `${baseURL}/Personne`;
-        case "professeur":
-          return `${baseURL}/Personne`;
-        case "cofac":
-          return `${baseURL}/Personne`;
-        case "doyen_et_vice":
-          return `${baseURL}/Personne`;
-        default:
-          throw new Error("Type inconnu : " + type);
-      }
-}  
-
-function getUpdateUrl(type : string){
-    switch (type) {
-        case "pat":
-          return `${baseURL}/person/update/pat`;
-        case "professeur":
-          return `${baseURL}/person/update/professeur`;
-        case "cofac":
-          return `${baseURL}/person/update/cofac`;
-        case "doyen_et_vice":
-          return `${baseURL}/person/update/doyen`;
-        default:
-          throw new Error("Type inconnu : " + type);
-      }
-}  
-
-function getDeleteUrl(type : string){
-    switch (type) {
-        case "pat":
-          return `${baseURL}/person/delete/pat`;
-        case "professeur":
-          return `${baseURL}/person/delete/professeur`;
-        case "cofac":
-          return `${baseURL}/person/delete/cofac`;
-        case "doyen_et_vice":
-          return `${baseURL}/person/delete/doyen`;
-        default:
-          throw new Error("Type inconnu : " + type);
-      }
-}  
-
-
-export async function createPerson<T extends BasePersonWithoutId & { type: string }>(
-  person: T
-): Promise<T & { id: number }> {
-
-  try {
-
-    const url = getCreateUrl(person.type);
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(person),
-    });
-  
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP lors de la création de personne : ${response.status}`);
-    }
-  
-    return response.json();
-  } catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
+// Fonction utilitaire pour gérer les erreurs
+function handleError(error: any): never {
     if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
     }
     
-    // Si c'est une erreur de parsing JSON
     if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
+        throw new Error('Erreur de format des données reçues du serveur.');
     }
     
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
     if (error instanceof Error) {
-      throw error;
+        throw error;
     }
     
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
+    throw new Error('Une erreur inattendue s\'est produite.');
 }
 
-export async function getPersonsByType<T extends BasePerson>(type : string): Promise<T[]> {
-    const url = getListUrl(type);
-    const response = await fetch(url);
-  
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP lors de la récupération des ${type}: ${response.status}`);
-    }
-  
-    return response.json(); 
-  }
-
-  export async function getAllPersons(): Promise<BasePerson[]> {
-
+export async function getAllPersons(): Promise<BasePerson[]> {
     try {
-
-      const response = await fetch(`${baseURL}/person/list`);
-    
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP lors de la récupération des personnes: ${response.status}`);
-      }
-    
-      return response.json(); 
+        const response = await fetch(`${baseURL}/api/Personne`);
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP lors de la récupération des personnes: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transformer les données du backend en format frontend
+        return data.map((person: any) => ({
+            id: person.id,
+            nom: person.nom,
+            prenom: person.prenom,
+            email: person.email,
+            tel: person.tel,
+            dateInsertion: person.dateInsertion,
+            sexe: person.sexe || "M",
+            type: person.type,
+            postAffectation: person.postAffectation || "",
+            grade: person.grade || "",
+            fonction: person.fonction || "",
+            titre: person.titre || "",
+            appartenance: person.appartenance || "",
+            responsabilite: person.responsabilite || ""
+        }));
     } catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        return handleError(error);
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
-  }
-
-export async function getPerson<T extends BasePerson>(type : string , id : number):  Promise<T>{
-  try {
-
-    const url = getListUrl(type);
-
-    const response = await fetch(`${url}/${id}`);
-    
-    if(!response.ok){
-        throw new Error(`Erreur HTTP lors de la récupération de personne: ${response.status}`);
-    }
-
-    return response.json();
-  }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
-    }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }
 
-
-export async function updatePerson<T extends BasePerson & { type: string }>(
-    person: T
-  ): Promise<T> {
+export async function createPerson(person: BasePersonWithoutId & { type: string }): Promise<BasePerson> {
     try {
+        const response = await fetch(`${baseURL}/api/Personne`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                nom: person.nom,
+                prenom: person.prenom,
+                email: person.email,
+                tel: person.tel,
+                dateInsertion: person.dateInsertion || new Date().toISOString()
+            }),
+        });
 
-      const url = getUpdateUrl(person.type);
-      const response = await fetch(`${url}/${person.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(person),
-      });
-    
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP lors de update de personne : ${response.status}`);
-      }
-    
-      return response.json();
-    }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP lors de la création de personne : ${response.status}`);
+        }
+
+        const createdPerson = await response.json();
+        
+        // Retourner dans le format frontend
+        return {
+            id: createdPerson.idPersonne,
+            nom: createdPerson.nom,
+            prenom: createdPerson.prenom,
+            email: createdPerson.email,
+            tel: createdPerson.tel,
+            dateInsertion: createdPerson.dateInsertion,
+            sexe: person.sexe,
+            type: person.type,
+            postAffectation: person.postAffectation || "",
+            grade: person.grade || "",
+            fonction: person.fonction || "",
+            titre: person.titre || "",
+            appartenance: person.appartenance || "",
+            responsabilite: person.responsabilite || ""
+        };
+    } catch (error) {
+        return handleError(error);
     }
-    
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
 }
-  
-export async function deletePerson(type : string , id : number){
-  try {
 
-    const url = getDeleteUrl(type);
+export async function updatePerson(person: BasePerson & { type: string }): Promise<BasePerson> {
+    try {
+        const response = await fetch(`${baseURL}/api/Personne/${person.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                idPersonne: person.id,
+                nom: person.nom,
+                prenom: person.prenom,
+                email: person.email,
+                tel: person.tel,
+                dateInsertion: person.dateInsertion
+            }),
+        });
 
-    const response = await fetch(`${url}/${id}`);
-    
-    if(!response.ok){
-        throw new Error(`Erreur HTTP lors de la suppression de personne: ${response.status}`);
-    }
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP lors de la mise à jour de personne : ${response.status}`);
+        }
 
-    return response.json();
-  }catch (error) {
-    // Si c'est une erreur de réseau ou de parsing JSON
-    if (error instanceof TypeError) {
-      throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+        return person;
+    } catch (error) {
+        return handleError(error);
+    }
+}
+
+export async function deletePerson(id: number): Promise<void> {
+    try {
+        const response = await fetch(`${baseURL}/api/Personne/${id}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP lors de la suppression de personne: ${response.status}`);
+        }
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+// Fonctions conservées pour la compatibilité (mais elles utilisent maintenant les endpoints unifiés)
+export async function getPersonsByType<T extends BasePerson>(type: string): Promise<T[]> {
+    const allPersons = await getAllPersons();
+    return allPersons.filter(person => person.type === type) as T[];
+}
+
+export async function getPerson<T extends BasePerson>(type: string, id: number): Promise<T> {
+    const allPersons = await getAllPersons();
+    const person = allPersons.find(p => p.id === id && p.type === type);
+    
+    if (!person) {
+        throw new Error(`Personne non trouvée avec l'ID ${id} et le type ${type}`);
     }
     
-    // Si c'est une erreur de parsing JSON
-    if (error instanceof SyntaxError) {
-      throw new Error('Erreur de format des données reçues du serveur.');
-    }
-    
-    // Relancer l'erreur si elle est déjà personnalisée (erreur HTTP)
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Erreur inconnue
-    throw new Error('Une erreur inattendue s\'est produite lors de la récupération des laboratoires.');
-  }
+    return person as T;
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { Key, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -194,20 +194,22 @@ export function LabManagement() {
     })
   }
 
-  const removeDescriptionField = (id: string) => {
-    if (formData.description.length <= 2) {
-      toast({
-        title: "Attention",
-        description: "Au moins 2 champs de description sont requis",
-        variant: "destructive",
-      })
-      return
-    }
-    setFormData({
-      ...formData,
-      description: formData.description.filter((item) => item.id !== id),
+const removeDescriptionField = (index: number) => {
+  if (formData.description.length <= 2) {
+    toast({
+      title: "Attention",
+      description: "Au moins 2 champs de description sont requis",
+      variant: "destructive",
     })
+    return
   }
+  
+  setFormData({
+    ...formData,
+    description: formData.description.filter((_, i) => i !== index),
+  })
+}
+
 
   const updateDescriptionField = (id: string, field: "cle" | "valeur", value: string) => {
     setFormData({
@@ -426,28 +428,32 @@ export function LabManagement() {
                         Ajouter
                       </Button>
                     </div>
+
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {formData.description.map((item, index) => (
-                        <div key={item.id} className="flex gap-2 items-start">
+                        <div key={index} className="flex gap-2 items-start">
                           <div className="flex-1 grid grid-cols-2 gap-2">
                             <Input
                               placeholder="Clé (ex: Mission)"
                               value={item.cle}
-                              onChange={(e) => updateDescriptionField(item.id, "cle", e.target.value)}
+                              onChange={(e) => {
+                                const updated = [...formData.description];
+                                updated[index] = { ...updated[index], cle: e.target.value };
+                                setFormData({ ...formData, description: updated });
+                              }}
                             />
                             <Input
                               placeholder="Valeur (ex: Recherche en IA)"
                               value={item.valeur}
-                              onChange={(e) => updateDescriptionField(item.id, "valeur", e.target.value)}
+                              onChange={(e) => {
+                                const updated = [...formData.description];
+                                updated[index] = { ...updated[index], valeur: e.target.value };
+                                setFormData({ ...formData, description: updated });
+                              }}
                             />
                           </div>
                           {formData.description.length > 2 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeDescriptionField(item.id)}
-                            >
+                            <Button type="button" variant="outline" size="sm" onClick={() => removeDescriptionField(index)}>
                               <X className="h-4 w-4" />
                             </Button>
                           )}
@@ -535,11 +541,38 @@ export function LabManagement() {
                             {/* Nom et description */}
                             <div className="mb-4">
                             <h3 className="font-semibold text-base mb-1">{lab.nom_labo}</h3>
-                            {lab.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                {lab.description.map((desc) => desc.valeur).join(", ")}
-                                </p>
-                            )}
+                
+                              {lab.description && lab.description.length > 0 && (
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-sm text-foreground">Informations détaillées</h4>
+                                  <div className="grid gap-2">
+                                    {/* Si description est une string */}
+                                    {typeof lab.description === 'string' ? (
+                                      lab.description.split(';').map((desc: { split: (arg0: string) => { (): any; new(): any; map: { (arg0: (part: any) => any): [any, any]; new(): any } } }, index: Key | null | undefined) => {
+                                        const [cle, valeur] = desc.split(':').map(part => part.trim());
+                                        return (
+                                          <div key={index} className="flex gap-3 text-sm">
+                                            <span className="font-medium text-university-primary min-w-[100px]">
+                                              {cle}:
+                                            </span>
+                                            <span className="text-muted-foreground flex-1">{valeur}</span>
+                                          </div>
+                                        );
+                                      })
+                                    ) : (
+                                      // Si description est un tableau (pour compatibilité)
+                                      lab.description.map((desc, index) => (
+                                        <div key={index} className="flex gap-3 text-sm">
+                                          <span className="font-medium text-university-primary min-w-[100px]">
+                                            {desc.cle}:
+                                          </span>
+                                          <span className="text-muted-foreground flex-1">{desc.valeur}</span>
+                                        </div>
+                                      ))
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                         </div>
 
                         {/* Informations principales */}

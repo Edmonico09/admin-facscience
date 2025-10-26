@@ -34,8 +34,8 @@ import { useToast } from "@/hooks/use-toast"
 import { BasePerson, COFAC, doyenEtVice, PAT, Person, PersonType, Professeur } from "@/services/types/person"
 // import { createOptions, getSelectOptions } from "@/services/api/option.api"
 import { options } from "@/services/types/option"
-import { useImageFallback, usePeople } from "@/hooks/usePerson"
-
+import {  usePeople } from "@/hooks/usePeople"
+import { useImageFallback } from "@/hooks/usePerson"
 
 
 const typeSpecificFields: Record<PersonType, (formData: any) => Partial<Person>> = {
