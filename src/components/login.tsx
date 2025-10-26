@@ -72,16 +72,7 @@ export default function LoginForm() {
               {loading ? "Connexion..." : "Se connecter"}
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setIdentifiant("admin");
-                setPassword("admin");
-              }}
-              className="w-full sm:w-auto text-sm underline text-zinc-600 dark:text-zinc-400 hover:text-university-primary transition"
-            >
-              Remplir demo
-            </button>
+            
           </div>
         </form>
       </div>
