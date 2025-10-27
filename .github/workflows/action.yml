@@ -11,17 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Récupérer le code
+      # Récupérer le code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Installer Node.js
+      # Installer Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Installer les dépendances et builder
+      # Installer les dépendances et builder
       - name: Install dependencies
         run: npm ci
 
@@ -31,7 +31,7 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # 4️⃣ Sauvegarder le build comme artefact
+      # Sauvegarder le build comme artefact
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -41,17 +41,28 @@ jobs:
   deploy:
     name: Deploy to Server
     runs-on: ubuntu-latest
-    needs: build  # ← attend que le job "build" soit terminé avec succès
+    needs: build  # Attend que le job "build" soit terminé avec succès
 
     steps:
-      # 1️⃣ Télécharger le build du job précédent
+      # Télécharger le build du job précédent
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: react-build
           path: build
 
-      # 2️⃣ Déployer via SSH (SCP)
+      # Créer le dossier distant si nécessaire
+      - name: Create target directory if not exists
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            mkdir -p /home/sciadm/test
+
+      # Déployer via SSH (SCP)
       - name: Deploy via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -59,10 +70,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          source: "build/*"
+          source: "build/**"
           target: "/home/sciadm/test"
 
-      # 3️⃣ Ajuster les permissions (optionnel)
+      # Ajuster les permissions (optionnel)
       - name: Fix permissions
         uses: appleboy/ssh-action@v1
         with:
