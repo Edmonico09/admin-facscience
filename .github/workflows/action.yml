@@ -1,0 +1,25 @@
+name: Build and Deploy Faculty of Science Website
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+#Create directory
+
+      - name: Create directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            mkdir /home/sciadm/test
+            ls -al /home/sciadm/test
