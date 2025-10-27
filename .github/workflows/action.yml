@@ -1,4 +1,4 @@
-name: Build and Deploy Faculty of Science Website
+name: Build and Deploy Faculty of Science Website .
 
 on:
   push:
