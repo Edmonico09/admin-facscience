@@ -74,7 +74,7 @@ jobs:
           target: "/home/sciadm/test"
           strip_components: 1
 
-      # Ajuster les permissions (optionnel)
+      # Ajuster les permissions (optionnels)
       - name: Fix permissions
         uses: appleboy/ssh-action@v1
         with:
