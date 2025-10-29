@@ -61,7 +61,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            rm -rf /home/sciadm/admin-facscience*
+            rm -rf /home/sciadm/Admin-interface/admin-facscience*
+            # Créer le dossier s'il n'existe pas
+            mkdir -p /home/sciadm/Admin-interface/admin-facscience/
 
 
       - name: Copy build to folder
