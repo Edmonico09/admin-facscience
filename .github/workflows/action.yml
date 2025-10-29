@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Récupérer le code
+      # Récupérer le code dans git
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Installer Node.js
+      # Installer node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
