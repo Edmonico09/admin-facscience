@@ -74,5 +74,5 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           source: "build/*"
-          target: "/home/sciadm/admin-facscience/"
+          target: "/home/sciadm/Admin-interface/admin-facscience/"
           strip_components: 1
