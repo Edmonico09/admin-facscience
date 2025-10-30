@@ -76,14 +76,3 @@ jobs:
           source: "build/*"
           target: "/home/sciadm/Admin-interface/admin-facscience/"
           strip_components: 1
-
-      - name: Restart systemd service
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          script: |
-            sudo systemctl restart admin-facscience.service
-            sudo systemctl status admin-facscience.service --no-pager
